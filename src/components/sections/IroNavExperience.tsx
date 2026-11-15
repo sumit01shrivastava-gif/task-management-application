@@ -46,7 +46,8 @@ export function IroNavExperience() {
     if (!near || renderer.current || !canvas.current) return;
     const r = new PhotoExplodeRenderer(canvas.current);
     renderer.current = r;
-    if (import.meta.env.DEV) (window as unknown as { __ironav: unknown }).__ironav = { state, renderer: r };
+    // read-only handle for automated verification (dev builds, or ?verify on any build)
+    if (import.meta.env.DEV || location.search.includes('verify')) (window as unknown as { __ironav: unknown }).__ironav = { state, renderer: r };
     r.load().then(
       () => setLoaded(true),
       () => setFailed(true),
