@@ -2,14 +2,13 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ANATOMY } from '../../content/ironav';
-import { CAMERA, GROUPS, MODULE_NOTES, manifest, type Mode } from '../../exploded/config';
-import { createState, detachedCount } from '../../exploded/state';
+import { CAMERA, GROUPS, MODULE_NOTES, type Mode } from '../../exploded/config';
+import { createState } from '../../exploded/state';
 import { PhotoExplodeRenderer, type LabelPos } from '../../exploded/renderer';
 import { buildTimeline, PIN_VIEWPORTS, SNAP_POINTS, STAGES, stageProgress, TIMELINE_LENGTH } from '../../exploded/timeline';
 import { useInView, usePrefersReducedMotion } from '../../hooks/useMotion';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { scrollToTarget } from '../../hooks/useSmoothScroll';
-import { Arrow } from '../ui/Icons';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -31,8 +30,6 @@ export function Anatomy() {
   const groupEls = useRef<(HTMLDivElement | null)[]>([]);
   const noteEls = useRef<(HTMLDivElement | null)[]>([]);
   const progress = useRef<HTMLDivElement>(null);
-  const readSep = useRef<HTMLSpanElement>(null);
-  const readZoom = useRef<HTMLSpanElement>(null);
   const tlRef = useRef<gsap.core.Timeline | null>(null);
   const stRef = useRef<ScrollTrigger | null>(null);
   const [activeStage, setActiveStage] = useState(0);
@@ -50,7 +47,7 @@ export function Anatomy() {
       () => {
         setLoaded(true);
         // depth sprites only where they are used (desktop), after the essentials
-        if (!window.matchMedia('(max-width: 860px)').matches) void r.loadEffects();
+        void r.loadEffects();
       },
       () => setFailed(true),
     );
@@ -101,8 +98,6 @@ export function Anatomy() {
       el.style.setProperty('--vx', `${r.view.x.toFixed(1)}px`);
       el.style.setProperty('--vy', `${r.view.y.toFixed(1)}px`);
       el.style.setProperty('--vs', r.view.s.toFixed(3));
-      if (readSep.current) readSep.current.textContent = `${detachedCount(state)} / ${manifest.layers.length - 1}`;
-      if (readZoom.current) readZoom.current.textContent = `${state.cam.z.toFixed(2)}×`;
     };
     gsap.ticker.add(tick);
     return () => gsap.ticker.remove(tick);
@@ -210,25 +205,12 @@ export function Anatomy() {
         <div className="anat__captions">
           {ANATOMY.stages.map((st, i) => (
             <div key={st.id} className={`cap ${st.id === 'ironav' ? 'cap--ironav' : ''}`} ref={setCaption(i)}>
-              <span className="cap__n" aria-hidden>
-                {String(i + 1).padStart(2, '0')}
-              </span>
-              <p className="label cap__k">{st.kicker}</p>
+              <p className="label cap__k">
+                <b>{String(i + 1).padStart(2, '0')}</b> / {String(ANATOMY.stages.length).padStart(2, '0')} · {st.kicker}
+              </p>
               <h2 className="cap__t">{st.title}</h2>
               <p className="cap__b">{st.body}</p>
-              {st.id === 'ironav' && (
-                <>
-                  <p className="cap__dev">{ANATOMY.moduleLine}</p>
-                  <a className="btn btn--amber" href="#technology">
-                    Explore IroNav <Arrow />
-                  </a>
-                </>
-              )}
-              {st.id === 'reassemble' && (
-                <a className="btn btn--light" href="#enquiry">
-                  Discuss Platform Integration <Arrow />
-                </a>
-              )}
+
             </div>
           ))}
         </div>
@@ -245,17 +227,6 @@ export function Anatomy() {
             ))}
           </ol>
         </nav>
-
-        <div className="anat__readout label" aria-hidden>
-          <span>Source</span>
-          <span>Original photograph</span>
-          <span>Layers</span>
-          <span>{manifest.layers.length}</span>
-          <span>Detached</span>
-          <span ref={readSep}>0 / 22</span>
-          <span>Camera</span>
-          <span ref={readZoom}>1.00×</span>
-        </div>
 
         <p className="anat__note label">{ANATOMY.note}</p>
         <div className="anat__progress" aria-hidden>

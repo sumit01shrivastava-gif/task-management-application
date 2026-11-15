@@ -80,11 +80,10 @@ FRAME = ('frame', 'frame', 'Central carbon-fibre frame')
 
 # Exploded-view direction for each layer, in original-image pixels.
 EXPLODE = {
-    # upper band: upper propellers / motors rise and fan outwards
-    'prop-front-left-upper': (-190, -120), 'prop-front-right-upper': (120, -150), 'prop-rear-right-upper': (215, -95),
+    # rotors lift / drop along their motor axes and stay close, so they read as rotor discs
+    'prop-front-left-upper': (-125, -120), 'prop-front-right-upper': (90, -138), 'prop-rear-right-upper': (160, -96),
+    'prop-front-left-lower': (-125, 118), 'prop-rear-right-lower': (160, 124),
     'motor-front-left-upper': (-120, -58), 'motor-front-right-upper': (85, -82), 'motor-rear-right-upper': (150, -32),
-    # lower band: lower propellers / motors drop and fan outwards
-    'prop-front-left-lower': (-190, 112), 'prop-rear-right-lower': (215, 118),
     'motor-front-left-lower': (-120, 62), 'motor-front-right-lower': (85, 68), 'motor-rear-right-lower': (150, 72),
     # structure: arms slide out along their own axes
     'arm-front-left': (-62, 0), 'arm-front-right': (52, -28), 'arm-rear-right': (72, 10),
@@ -160,6 +159,11 @@ def main():
         x0, y0, x1, y1 = bbox
         crop = layer.crop(bbox)
         crop.save(os.path.join(OUT, f'{lid}.webp'), lossless=True, quality=100, method=6, exact=True)
+        # display variant for the separated state: cut edges feathered INWARD only
+        # (erode then blur, clipped by the hard mask), so no neighbouring pixels leak in.
+        soft_m = ImageChops.darker(m, m.filter(ImageFilter.MinFilter(5)).filter(ImageFilter.GaussianBlur(1.6)))
+        soft = src.copy(); soft.putalpha(ImageChops.multiply(alpha, soft_m))
+        soft.crop(bbox).save(os.path.join(OUT, f'{lid}-soft.webp'), lossless=True, method=6, exact=True)
         # outline: dilated silhouette minus silhouette, blurred — used for highlighting only
         pad = 8
         sil = Image.new('L', (x1 - x0 + 2 * pad, y1 - y0 + 2 * pad), 0)
@@ -175,7 +179,7 @@ def main():
         ax, ay = (x0 + sx / n, y0 + sy / n) if n else ((x0 + x1) / 2, (y0 + y1) / 2)
         ex, ey = EXPLODE.get(lid, (0, 0))
         entries.append({'id': lid, 'group': group, 'label': label, 'file': f'{lid}.webp', 'x': x0, 'y': y0, 'w': x1 - x0, 'h': y1 - y0,
-                        'outline': {'file': f'{lid}-outline.webp', 'x': x0 - pad, 'y': y0 - pad, 'w': x1 - x0 + 2 * pad, 'h': y1 - y0 + 2 * pad},
+                        'soft': f'{lid}-soft.webp', 'outline': {'file': f'{lid}-outline.webp', 'x': x0 - pad, 'y': y0 - pad, 'w': x1 - x0 + 2 * pad, 'h': y1 - y0 + 2 * pad},
                         'anchor': [round(ax, 1), round(ay, 1)], 'explode': [ex, ey]})
         total.alpha_composite(crop, (x0, y0))
 

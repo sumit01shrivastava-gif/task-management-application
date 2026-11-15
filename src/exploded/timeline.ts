@@ -16,7 +16,7 @@ export const STAGES = SEQUENCE.map((s, i) => ({ id: s.id, label: s.label, start:
 export const TIMELINE_LENGTH = STAGES.length * STAGE_LEN;
 
 /** Pinned scroll distance in viewport heights — roughly one scroll "page" per stage. */
-export const PIN_VIEWPORTS = { desktop: 11, mobile: 10 };
+export const PIN_VIEWPORTS = { desktop: 6.5, mobile: 6 };
 
 /** Normalised progress at which each stage's transition has finished (its hold point). */
 export const stageProgress = (i: number) => {

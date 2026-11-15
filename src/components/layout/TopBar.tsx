@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
 import { NAV } from '../../content/ironav';
-import { Arrow, Brand } from '../ui/Icons';
 
-/** Minimal product bar: brand, chapter index (with active state), one action. */
+/** Minimal presentation bar: official Globaz logo, product name, chapter index. */
 export function TopBar() {
   const [solid, setSolid] = useState(false);
   const [open, setOpen] = useState(false);
-  const [active, setActive] = useState<string>('');
+  const [active, setActive] = useState('');
 
   useEffect(() => {
     const on = () => setSolid(window.scrollY > 40);
@@ -17,10 +16,7 @@ export function TopBar() {
 
   useEffect(() => {
     const els = NAV.map((n) => document.getElementById(n.id)).filter(Boolean) as HTMLElement[];
-    const io = new IntersectionObserver(
-      (entries) => entries.forEach((e) => e.isIntersecting && setActive(e.target.id)),
-      { rootMargin: '-45% 0px -50% 0px' },
-    );
+    const io = new IntersectionObserver((entries) => entries.forEach((e) => e.isIntersecting && setActive(e.target.id)), { rootMargin: '-45% 0px -50% 0px' });
     els.forEach((el) => io.observe(el));
     return () => io.disconnect();
   }, []);
@@ -35,8 +31,8 @@ export function TopBar() {
   return (
     <>
       <header className={`bar ${solid || open ? 'is-solid' : ''}`}>
-        <a href="#top" className="bar__brand" aria-label="Globaz Technologies — IroNav, back to top">
-          <Brand />
+        <a href="#top" className="bar__brand" aria-label="Globaz Technologies — back to top">
+          <img src="/media/brand/globaz-logo.png" width={247} height={47} alt="Globaz Technologies" />
         </a>
         <nav className="bar__nav" aria-label="Chapters">
           <span className="bar__product">IroNav</span>
@@ -47,9 +43,6 @@ export function TopBar() {
             </a>
           ))}
         </nav>
-        <a className="bar__cta" href="#enquiry">
-          Discuss integration <Arrow size={12} />
-        </a>
         <button className="bar__menu" aria-label={open ? 'Close menu' : 'Open menu'} aria-expanded={open} aria-controls="sheet" onClick={() => setOpen((v) => !v)}>
           <span />
           <span />
@@ -64,9 +57,6 @@ export function TopBar() {
             </a>
           ))}
         </nav>
-        <a className="btn btn--amber" href="#enquiry" onClick={() => setOpen(false)} tabIndex={open ? 0 : -1}>
-          Discuss Platform Integration <Arrow />
-        </a>
       </div>
     </>
   );

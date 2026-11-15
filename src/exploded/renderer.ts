@@ -4,7 +4,8 @@ import { easeInOut, isAssembled, type ExplodeState } from './state';
 interface Loaded {
   info: LayerInfo;
   img: HTMLImageElement;
-  outline: HTMLImageElement;
+  /** Display variant with inward-feathered cut edges, used once the layer moves. */
+  soft: HTMLImageElement;
   delay: number;
   depth: number;
   /** Pre-rendered depth effects (desktop only, loaded after the layers). */
@@ -69,8 +70,8 @@ export class PhotoExplodeRenderer {
     const [original, ...layers] = await Promise.all([
       loadImage(ORIGINAL_SRC),
       ...manifest.layers.map(async (info) => {
-        const [img, outline] = await Promise.all([loadImage(MEDIA_BASE + info.file), loadImage(MEDIA_BASE + info.outline.file)]);
-        return { info, img, outline, delay: meta[info.group]?.delay ?? 0, depth: meta[info.group]?.depth ?? 0 } as Loaded;
+        const [img, soft] = await Promise.all([loadImage(MEDIA_BASE + info.file), loadImage(MEDIA_BASE + info.soft)]);
+        return { info, img, soft, delay: meta[info.group]?.delay ?? 0, depth: meta[info.group]?.depth ?? 0 } as Loaded;
       }),
     ]);
     this.original = original;
@@ -116,8 +117,10 @@ export class PhotoExplodeRenderer {
     const ds = 1 + l.depth * k;
     const w = l.info.w * ds;
     const h = l.info.h * ds;
-    let cx = l.info.x + l.info.w / 2 + l.info.explode[0] * f.x * k;
-    let cy = l.info.y + l.info.h / 2 + l.info.explode[1] * f.y * k;
+    // depth parallax: nearer assemblies drift further against the camera's pan
+    const par = l.depth * 3 * k;
+    let cx = l.info.x + l.info.w / 2 + l.info.explode[0] * f.x * k - (s.cam.x - IMG_W / 2) * par;
+    let cy = l.info.y + l.info.h / 2 + l.info.explode[1] * f.y * k - (s.cam.y - IMG_H / 2) * par;
     let sc = ds;
     if (l.info.id === MODULE_ID && s.focus > 0) {
       const t = easeInOut(s.focus);
@@ -178,20 +181,49 @@ export class PhotoExplodeRenderer {
         const w = l.info.w * p.sc;
         const h = l.info.h * p.sc;
         const pad = FX_PAD * p.sc;
-        // depth cue: a soft contact shadow, from the layer's own silhouette
-        if (desktop && l.shadow && p.k > 0.02 && l.info.group !== 'frame') {
-          ctx.globalAlpha = a * 0.7 * p.k;
-          ctx.drawImage(l.shadow, p.x - pad, p.y - pad + 16 * p.k, w + 2 * pad, h + 2 * pad);
-        }
-        // depth of field: everything except the module defocuses while it is in focus
-        const dof = desktop && l.blur && !isMod ? s.dim : 0;
-        if (dof < 0.999) {
-          ctx.globalAlpha = a * (1 - dof);
+        if (l.info.group === 'frame') {
+          ctx.globalAlpha = a;
           ctx.drawImage(l.img, p.x, p.y, w, h);
+          // recess shadows where detached assemblies used to sit (their own silhouettes)
+          for (const o of this.layers) {
+            if (!o.shadow || o.info.group === 'frame') continue;
+            const k = s.p[o.info.id] ?? 0;
+            if (k < 0.02) continue;
+            ctx.globalAlpha = a * 0.5 * Math.min(1, k * 3);
+            ctx.drawImage(o.shadow, o.info.x - FX_PAD, o.info.y - FX_PAD, o.info.w + 2 * FX_PAD, o.info.h + 2 * FX_PAD);
+          }
+          continue;
+        }
+        // depth cue: a soft contact shadow, from the layer's own silhouette
+        if (l.shadow && p.k > 0.02) {
+          ctx.globalAlpha = a * 0.6 * p.k;
+          ctx.drawImage(l.shadow, p.x - pad + 6 * p.k, p.y - pad + 18 * p.k, w + 2 * pad, h + 2 * pad);
+        }
+        // hard cut at rest, feathered display variant as it separates
+        const soft = Math.min(1, p.k / 0.08);
+        const dof = desktop && l.blur && !isMod ? s.dim : 0;
+        const sharpA = a * (1 - dof);
+        if (sharpA > 0.001) {
+          if (soft < 1) {
+            ctx.globalAlpha = sharpA * (1 - soft);
+            ctx.drawImage(l.img, p.x, p.y, w, h);
+          }
+          if (soft > 0) {
+            ctx.globalAlpha = sharpA * soft;
+            ctx.drawImage(l.soft, p.x, p.y, w, h);
+          }
         }
         if (dof > 0.001) {
           ctx.globalAlpha = a * dof;
           ctx.drawImage(l.blur!, p.x - pad, p.y - pad, w + 2 * pad, h + 2 * pad);
+        }
+        // identification: a restrained luminance lift on the group being presented
+        const hl = s.hl[l.info.group] * (1 - s.dim);
+        if (hl > 0.01) {
+          ctx.globalCompositeOperation = 'lighter';
+          ctx.globalAlpha = 0.16 * hl;
+          ctx.drawImage(soft > 0 ? l.soft : l.img, p.x, p.y, w, h);
+          ctx.globalCompositeOperation = 'source-over';
         }
       }
     }
@@ -210,23 +242,11 @@ export class PhotoExplodeRenderer {
       ctx.globalCompositeOperation = 'source-over';
     }
 
-    // Component outlines — drawn from each layer's own silhouette.
-    for (const l of this.layers) {
-      let a = s.hl[l.info.group];
-      if (l.info.id === MODULE_ID) a = Math.max(a, s.focus * 0.85);
-      else a *= 1 - s.dim;
-      if (a <= 0.01) continue;
-      const p = placements.get(l.info.id)!;
-      ctx.globalAlpha = a;
-      const o = l.info.outline;
-      ctx.drawImage(l.outline, p.x + (o.x - l.info.x) * p.sc, p.y + (o.y - l.info.y) * p.sc, o.w * p.sc, o.h * p.sc);
-    }
-
     // Callout leader lines.
     ctx.lineWidth = 1 / this.scale;
     const line = (ax: number, ay: number, bx: number, by: number, a: number) => {
       ctx.globalAlpha = a;
-      ctx.strokeStyle = '#9fb6ff';
+      ctx.strokeStyle = 'rgba(236,235,230,0.7)';
       ctx.fillStyle = '#f2a93b';
       ctx.beginPath();
       ctx.moveTo(ax, ay);

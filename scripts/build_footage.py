@@ -5,9 +5,10 @@ Sources (Wikimedia Commons, downloaded as the 1080p VP9 derivatives):
   • "The Atchafalaya Basin Bridge And Whiskey Bay Pilot Channel Drone Video"
     — Third Coast Drone, CC BY 3.0
     https://commons.wikimedia.org/wiki/File:The_Atchafalaya_Basin_Bridge_And_Whiskey_Bay_Pilot_Channel_Drone_Video.webm
-  • "Cape Neddick Nubble Lighthouse - York, Maine 4k Drone flight - DJI Air2S"
-    — Dave Halter, CC BY 3.0
-    https://commons.wikimedia.org/wiki/File:Cape_Neddick_Nubble_Lighthouse_-_York,_Maine_4k_Drone_flight_-_DJI_Air2S.webm
+  • "Sondermunitionslager Dülmen-Visbeck" (former Bundeswehr special ammunition
+    storage site, filmed July 2024) — Dietmar Rabich, CC BY-SA 4.0
+    https://commons.wikimedia.org/wiki/File:Sondermunitionslager_D%C3%BClmen-Visbeck.webm
+    The derived installation film is shared under CC BY-SA 4.0 as the licence requires.
 
 Changes made (as CC BY requires us to indicate): trimmed, re-sequenced, digitally
 reframed (crop windows within the original frame — never upscaled), colour-graded,
@@ -16,7 +17,7 @@ tracked boxes and reference points are computed from the footage itself with
 template matching / optical flow; nothing is generated.
 
 Usage: python3 scripts/build_footage.py <dir-with-source-webms> [vehicle] [building]
-Output: public/media/footage/{vehicle,building}-{desktop,mobile}.{mp4,webm} + posters
+Output: public/media/footage/{vehicle,installation}-{desktop,mobile}.{mp4,webm} + posters
 """
 import os, subprocess, sys, json, math
 import numpy as np
@@ -238,180 +239,167 @@ def draw_beam(im, origin, box, a_in, t):
     im.alpha_composite(layer)
 
 
+XF = 16  # crossfade length between shots (frames)
+
+
+def plate_color(fr):
+    """Mean colour of the upper third of a plate: used to sit the composite in the same air."""
+    return fr[: fr.shape[0] // 3].reshape(-1, 3).mean(0)
+
+
+def match_sprite(sprite, haze, amount):
+    """Atmospheric match: pull the sprite towards the plate's haze colour and soften contrast."""
+    a = np.asarray(sprite).astype(np.float32)
+    rgb = a[..., :3]
+    lum = rgb @ np.array([0.299, 0.587, 0.114], np.float32)
+    rgb = rgb * 0.9 + lum[..., None] * 0.1
+    rgb = rgb * (1 - amount) + np.asarray(haze, np.float32) * amount
+    a[..., :3] = rgb
+    return Image.fromarray(a.clip(0, 255).astype(np.uint8), 'RGBA')
+
+
+def compose(shots, mode, name, out_size, with_drone, crf=23, vp9crf=34):
+    """Join shots with crossfades and draw overlays on top of the joined plate.
+    Each shot: dict(plates=[...], boxes=[(L,T,R,B)...] in output px, label, sub, drone=(fx,fy)).
+    The composited aircraft is one continuous layer that glides between shot positions
+    during each crossfade, so cuts never make it jump or double."""
+    W, H = out_size
+    f_lab = font(22 if mode == 'desktop' else 24)
+    f_small = font(17 if mode == 'desktop' else 19)
+    if with_drone:
+        sprite0, sh0, origin0 = ironav_sprite(300 if mode == 'desktop' else 280)
+    # timeline: shot k occupies [start_k, start_k + n_k); consecutive shots overlap by XF
+    starts, t = [], 0
+    for k, sh in enumerate(shots):
+        starts.append(t)
+        t += len(sh['plates']) - XF
+    total = t  # last XF frames of the final shot crossfade into the first shot (seamless loop)
+
+    def frame_refs(i):
+        refs = []
+        for k, sh in enumerate(shots):
+            j = i - starts[k]
+            n = len(sh['plates'])
+            if 0 <= j < n:
+                refs.append((k, j))
+            elif k == 0 and 0 <= i + total - starts[0] < n and i + total - starts[0] >= total - starts[0]:
+                pass
+        # loop: the tail of the last shot overlaps the head of the first
+        k = len(shots) - 1
+        j = i + total - starts[k]
+        if 0 <= j < len(shots[k]['plates']) and i < XF:
+            refs.append((k, j))
+        return refs
+
+    def weight(k, j):
+        n = len(shots[k]['plates'])
+        w = 1.0
+        if j < XF:
+            w = min(w, (j + 0.5) / XF)
+        if j >= n - XF:
+            w = min(w, (n - j - 0.5) / XF)
+        return ease(w)
+
+    def gen():
+        for i in range(total):
+            refs = frame_refs(i)
+            ws = [weight(k, j) for k, j in refs]
+            sw = sum(ws) or 1
+            plate = sum(shots[k]['plates'][j].astype(np.float32) * (w / sw) for (k, j), w in zip(refs, ws))
+            im = Image.fromarray(plate.clip(0, 255).astype(np.uint8)).convert('RGBA')
+            # drone position: weighted blend of the shots' anchor positions
+            if with_drone:
+                dx = sum(shots[k]['drone'][0] * w for (k, _), w in zip(refs, ws)) / sw
+                dy = sum(shots[k]['drone'][1] * w for (k, _), w in zip(refs, ws)) / sw
+                haze = sum(shots[k]['haze'] * w for (k, _), w in zip(refs, ws)) / sw
+                sx_ = W * dx - sprite0.width / 2
+                sy_ = H * dy - sprite0.height / 2 + math.sin(i / 16) * 3
+                ox, oy = sx_ + origin0[0], sy_ + origin0[1]
+                for (k, j), w in zip(refs, ws):
+                    ov = max(0.0, (w / sw - 0.4) / 0.6)
+                    if ov <= 0:
+                        continue
+                    L, T, R, B = shots[k]['boxes'][j]
+                    draw_beam(im, (ox, oy), (L - 6, T - 6, R + 6, B + 6), ov, i / FPS)
+                sp = match_sprite(sprite0, haze, 0.16)
+                im.alpha_composite(sh0, (int(sx_ + 10), int(sy_ + 22)))
+                im.alpha_composite(sp, (int(sx_), int(sy_)))
+            d = ImageDraw.Draw(im, 'RGBA')
+            for (k, j), w in zip(refs, ws):
+                # overlays hand over at the middle of a crossfade instead of doubling up
+                w = max(0.0, (w / sw - 0.4) / 0.6)
+                if w <= 0:
+                    continue
+                L, T, R, B = shots[k]['boxes'][j]
+                c = max(10, min(22, (R - L) * 0.25))
+                col = INK + (int(230 * w),)
+                for (x1, y1, ddx, ddy) in [(L, T, 1, 1), (R, T, -1, 1), (L, B, 1, -1), (R, B, -1, -1)]:
+                    d.line([(x1, y1), (x1 + c * ddx, y1)], fill=col, width=2)
+                    d.line([(x1, y1), (x1, y1 + c * ddy)], fill=col, width=2)
+                lx = R + 12 if R + 260 < W else L - 260
+                lx = max(14, min(W - 260, lx))
+                ly = max(14, min(H - 80, T - 4))
+                d.rectangle([lx - 8, ly - 6, lx + 246, ly + 52], fill=(3, 15, 53, int(170 * w)))
+                d.text((lx, ly), shots[k]['label'], font=f_lab, fill=INK + (int(240 * w),))
+                d.text((lx, ly + 28), shots[k]['sub'], font=f_small, fill=AMBER + (int(235 * w),))
+            m = 26
+            d.text((m, H - m - 20), 'ILLUSTRATIVE COMPOSITE · NOT A PRODUCT DEMONSTRATION' if with_drone else 'ILLUSTRATIVE · LICENSED AERIAL FOOTAGE', font=f_small, fill=INK + (170,))
+            yield np.asarray(im.convert('RGB'))
+    write_video(gen(), out_size, name, total, crf=crf, vp9crf=vp9crf)
+
+
 def vehicle(src_dir, mode):
     src = os.path.join(src_dir, 'atch1080.webm')
     out_size = (1280, 720) if mode == 'desktop' else (720, 960)
-    f_lab = font(22 if mode == 'desktop' else 24)
-    f_small = font(17 if mode == 'desktop' else 19)
-    frames_out = []
-    sprite, sprite_sh, origin0 = ironav_sprite(330 if mode == 'desktop' else 300)
+    W, H = out_size
+    shots = []
     for si, shot in enumerate(VEHICLE_SHOTS):
-        fr = read_frames(src, shot['t0'], shot['t1'])
+        fr = read_frames(src, shot['t0'], shot['t1'] + XF / FPS * 0.5)
         boxes = track(fr, shot['box'])
         cen = smooth([(x + w / 2, y + h / 2) for x, y, w, h in boxes], k=7)
         n = len(fr)
-        # reference points: real image features, followed with optical flow
-        g0 = cv2.cvtColor(fr[0], cv2.COLOR_RGB2GRAY)
-        pts = cv2.goodFeaturesToTrack(g0, maxCorners=40, qualityLevel=0.05, minDistance=90, blockSize=9)
-        pts = pts.reshape(-1, 2) if pts is not None else np.zeros((0, 2), np.float32)
-        prev = g0
-        # keep the points away from the tracked vehicle
-        bx, by, bw, bh = boxes[0]
-        keep = [(px < bx - 60 or px > bx + bw + 60 or py < by - 60 or py > by + bh + 60) for px, py in pts]
-        pts = pts[np.array(keep, bool)][:14].astype(np.float32) if len(pts) else pts
-        alive = np.ones(len(pts), bool)
+        plates, obox = [], []
         for i in range(n):
-            g = cv2.cvtColor(fr[i], cv2.COLOR_RGB2GRAY)
-            if i > 0 and len(pts):
-                nxt, st, _ = cv2.calcOpticalFlowPyrLK(prev, g, pts.reshape(-1, 1, 2), None, winSize=(21, 21), maxLevel=3)
-                pts = nxt.reshape(-1, 2)
-                alive &= st.reshape(-1).astype(bool)
-            prev = g
             t = i / max(1, n - 1)
             z = shot['z'][0] + (shot['z'][1] - shot['z'][0]) * ease(t)
-            if mode == 'mobile':
-                z *= 1.0  # portrait window already frames tighter horizontally
             cx, cy = cen[i]
-            # camera leads slightly in the direction of travel
             vx = cen[min(n - 1, i + 6)][0] - cen[max(0, i - 6)][0]
             vy = cen[min(n - 1, i + 6)][1] - cen[max(0, i - 6)][1]
             lead = 1.5 if mode == 'desktop' else 0.4
             view, (x0, y0, s) = crop_view(grade(fr[i]), cx + vx * lead, cy + vy * lead * 0.6, 1920 / z if mode == 'desktop' else 1080 * 0.75 / z, out_size)
-            im = Image.fromarray(view)
-            d = ImageDraw.Draw(im, 'RGBA')
-            W, H = out_size
-            bxo, byo, bwo, bho = [(boxes[i][0] - x0) * s, (boxes[i][1] - y0) * s, boxes[i][2] * s, boxes[i][3] * s]
-            tx, ty = bxo + bwo / 2, byo + bho / 2
-            a_in = min(1, i / 10) * min(1, (n - 1 - i) / 10)
-            # composited IroNav aircraft (original photograph) hovering with a gentle bob
-            gfx = (0.5, 0.13) if mode == 'mobile' else shot['drone']
-            sx_ = W * gfx[0] - sprite.width / 2
-            sy_ = H * gfx[1] - sprite.height / 2 + math.sin((si * 40 + i) / 14) * 4
-            ox, oy = sx_ + origin0[0], sy_ + origin0[1]
-            im = im.convert('RGBA')
-            draw_beam(im, (ox, oy), (bxo - 6, byo - 6, bxo + bwo + 6, byo + bho + 6), a_in, i / FPS)
-            im.alpha_composite(sprite_sh, (int(sx_ + 10), int(sy_ + 26)))
-            im.alpha_composite(sprite, (int(sx_), int(sy_)))
-            d = ImageDraw.Draw(im, 'RGBA')
-            tag_x = sx_ + sprite.width + 10 if sx_ + sprite.width + 230 < W else sx_ - 230
-            if mode == 'mobile':
-                tag_x = 26
-            tag_y = sy_ + sprite.height * 0.3 if mode == 'desktop' else sy_ + sprite.height + 6
-            d.rectangle([tag_x - 8, tag_y - 6, tag_x + 200, tag_y + 52], fill=(8, 10, 14, 150))
-            d.text((tag_x, tag_y), 'IRONAV', font=f_lab, fill=INK + (240,))
-            d.text((tag_x, tag_y + 28), 'VISUAL TRACKING', font=f_small, fill=AMBER + (230,))
-            # reference points on the scene
-            for (px, py), ok in zip(pts, alive):
-                if not ok:
-                    continue
-                qx, qy = (px - x0) * s, (py - y0) * s
-                if 0 <= qx < W and 0 <= qy < H:
-                    d.rectangle([qx - 4, qy - 4, qx + 4, qy + 4], outline=AMBER + (int(150 * a_in),), width=1)
-            # tracking brackets around the vehicle
-            pad = 8
-            L, T, R, B = bxo - pad, byo - pad, bxo + bwo + pad, byo + bho + pad
-            c = max(10, min(22, (R - L) * 0.25))
-            col = INK + (int(230 * a_in),)
-            for (x1, y1, dx, dy) in [(L, T, 1, 1), (R, T, -1, 1), (L, B, 1, -1), (R, B, -1, -1)]:
-                d.line([(x1, y1), (x1 + c * dx, y1)], fill=col, width=2)
-                d.line([(x1, y1), (x1, y1 + c * dy)], fill=col, width=2)
-            d.line([(tx - 5, ty), (tx + 5, ty)], fill=AMBER + (int(220 * a_in),), width=1)
-            d.line([(tx, ty - 5), (tx, ty + 5)], fill=AMBER + (int(220 * a_in),), width=1)
-            lx, ly = R + 12, T - 4
-            if lx + 240 > W:
-                lx = L - 250
-            # small plate behind the label for legibility over bright terrain
-            d.rectangle([lx - 8, ly - 6, lx + 236, ly + 52], fill=(8, 10, 14, int(150 * a_in)))
-            d.text((lx, ly), 'GROUND VEHICLE', font=f_lab, fill=INK + (int(240 * a_in),))
-            d.text((lx, ly + 28), f'IN VIEW · {shot["label"]}', font=f_small, fill=BLUE + (int(230 * a_in),))
-            # frame furniture
-            m = 26
-            d.text((m, H - m - 20), 'COMPOSITE · ILLUSTRATIVE VISUALISATION', font=f_small, fill=INK + (170,))
-            d.text((m, m), f'0{si + 1} / 03', font=f_small, fill=AMBER + (220,))
-            frames_out.append(np.asarray(im.convert('RGB')))
-    # short dip between shots and a seamless loop (fade in/out to the page graphite)
-    n = len(frames_out)
-    bounds = np.cumsum([0] + [int(round((s['t1'] - s['t0']) * FPS)) for s in VEHICLE_SHOTS])
-    bg = np.array([11, 13, 17], np.float32)
-
-    def gen():
-        for i, fr in enumerate(frames_out):
-            k = min([abs(i - b) for b in bounds])
-            a = min(1.0, k / 6.0)
-            yield (fr.astype(np.float32) * a + bg * (1 - a)).astype(np.uint8)
-    write_video(gen(), out_size, f'vehicle-{mode}', n)
+            plates.append(view)
+            bx, by, bw, bh = boxes[i]
+            obox.append(((bx - x0) * s - 8, (by - y0) * s - 8, (bx + bw - x0) * s + 8, (by + bh - y0) * s + 8))
+        drone = (0.5, 0.13) if mode == 'mobile' else shot['drone']
+        shots.append(dict(plates=plates, boxes=obox, label='GROUND VEHICLE', sub=f'IN VIEW · {shot["label"]}', drone=drone, haze=plate_color(plates[0])))
+    compose(shots, mode, f'vehicle-{mode}', out_size, True)
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# VIDEO 02 — one building, multiple viewpoints
-# ─────────────────────────────────────────────────────────────────────────────
-def building(src_dir, mode, shots):
-    src = os.path.join(src_dir, 'nubble1080.webm')
+def installation(src_dir, mode, shot_list):
+    src = os.path.join(src_dir, 'depot1080.webm')
     out_size = (1280, 720) if mode == 'desktop' else (720, 960)
-    f_small = font(17 if mode == 'desktop' else 19)
-    f_lab = font(22 if mode == 'desktop' else 24)
-    sprite, sprite_sh, origin0 = ironav_sprite(300 if mode == 'desktop' else 280)
-    BAR = 60  # pillarbox in the source frame
-    frames_out, bounds = [], [0]
-    for si, sh in enumerate(shots):
-        fr = read_frames(src, sh['t0'], sh['t1'])[:, :, BAR:-BAR]
+    shots = []
+    for sh in shot_list:
+        fr = read_frames(src, sh['t0'], sh['t1'] + XF / FPS * 0.5)
         n = len(fr)
-        bx0, by0, bw0, bh0 = sh['box']
-        boxes = track_flow(fr, (bx0 - BAR, by0, bw0, bh0))
-        sm = smooth(boxes, k=6)
-        boxes = [tuple(v) for v in sm]
-        cen = [(x + w / 2, y + h / 2) for x, y, w, h in boxes]
+        boxes = [tuple(v) for v in smooth(track_flow(fr, sh['box']), k=6)]
+        plates, obox = [], []
         for i in range(n):
             t = ease(i / max(1, n - 1))
             z = sh['z'][0] + (sh['z'][1] - sh['z'][0]) * t
-            cx, cy = cen[i]
+            bx, by, bw, bh = boxes[i]
+            cx, cy = bx + bw / 2, by + bh / 2
             if mode == 'desktop':
-                cx = cx * 0.35 + fr.shape[2] / 2 * 0.65  # keep the composition, drift towards the structure
+                cx = cx * 0.35 + fr.shape[2] / 2 * 0.65
+                cy = cy * 0.35 + fr.shape[1] / 2 * 0.65
                 cw = fr.shape[2] / z
             else:
                 cw = fr.shape[1] * 0.75 / z
             view, (x0, y0, s) = crop_view(grade(fr[i]), cx, cy, cw, out_size)
-            W, H = out_size
-            im = Image.fromarray(view).convert('RGBA')
-            a_in = min(1, i / 12) * min(1, (n - 1 - i) / 12)
-            bx, by, bw, bh = boxes[i]
-            L, T = (bx - x0) * s - 10, (by - y0) * s - 10
-            R, B = L + bw * s + 20, T + bh * s + 20
-            # IroNav composite observing the structure from alternating sides
-            if mode == 'mobile':
-                gfx = (0.5, 0.12)
-            else:
-                gfx = (0.2, 0.17) if (L + R) / 2 > W * 0.5 else (0.8, 0.17)
-            sx_ = W * gfx[0] - sprite.width / 2
-            sy_ = H * gfx[1] - sprite.height / 2 + math.sin((si * 37 + i) / 15) * 4
-            draw_beam(im, (sx_ + origin0[0], sy_ + origin0[1]), (L, T, R, B), a_in * 0.85, i / FPS)
-            im.alpha_composite(sprite_sh, (int(sx_ + 10), int(sy_ + 24)))
-            im.alpha_composite(sprite, (int(sx_), int(sy_)))
-            d = ImageDraw.Draw(im, 'RGBA')
-            c = 18
-            col = INK + (int(220 * a_in),)
-            for (x1, y1, dx, dy) in [(L, T, 1, 1), (R, T, -1, 1), (L, B, 1, -1), (R, B, -1, -1)]:
-                d.line([(x1, y1), (x1 + c * dx, y1)], fill=col, width=2)
-                d.line([(x1, y1), (x1, y1 + c * dy)], fill=col, width=2)
-            lx = R + 12 if R + 250 < W else L - 250
-            lx = max(12, min(W - 250, lx))
-            ly = max(12, min(H - 70, T))
-            d.rectangle([lx - 8, ly - 6, lx + 236, ly + 52], fill=(8, 10, 14, int(150 * a_in)))
-            d.text((lx, ly), 'STRUCTURE', font=f_lab, fill=INK + (int(240 * a_in),))
-            d.text((lx, ly + 28), f'VIEWPOINT 0{sh["vp"]}', font=f_small, fill=BLUE + (int(230 * a_in),))
-            m = 26
-            d.text((m, m), sh['label'], font=f_small, fill=AMBER + (220,))
-            d.text((m, H - m - 20), 'COMPOSITE · ILLUSTRATIVE VISUALISATION', font=f_small, fill=INK + (170,))
-            frames_out.append(np.asarray(im.convert('RGB')))
-        bounds.append(len(frames_out))
-    bg = np.array([11, 13, 17], np.float32)
-
-    def gen():
-        for i, fr in enumerate(frames_out):
-            k = min([abs(i - b) for b in bounds])
-            a = min(1.0, k / 7.0)
-            yield (fr.astype(np.float32) * a + bg * (1 - a)).astype(np.uint8)
-    write_video(gen(), out_size, f'building-{mode}', len(frames_out), crf=27, vp9crf=40)
+            plates.append(view)
+            obox.append(((bx - x0) * s - 8, (by - y0) * s - 8, (bx + bw - x0) * s + 8, (by + bh - y0) * s + 8))
+        shots.append(dict(plates=plates, boxes=obox, label=sh['label'], sub=sh['sub']))
+    compose(shots, mode, f'installation-{mode}', out_size, False, crf=26, vp9crf=38)
 
 
 def debug_track(src_dir, name, t0, t1, box, out):
@@ -440,8 +428,8 @@ if __name__ == '__main__':
     if 'vehicle' in which:
         for m in ('desktop', 'mobile'):
             vehicle(src_dir, m)
-    if 'building' in which:
+    if 'installation' in which:
         sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-        from building_shots import SHOTS  # noqa: E402
+        from installation_shots import SHOTS  # noqa: E402
         for m in ('desktop', 'mobile'):
-            building(src_dir, m, SHOTS)
+            installation(src_dir, m, SHOTS)

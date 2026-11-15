@@ -1,187 +1,201 @@
 /**
- * IroNav landing page — content.
+ * IroNav — corporate product presentation by Globaz Technologies.
  *
- * Factual source: Globaz IroNav wireframe (comdez.co.uk/globaz-wireframes/ironav.html).
- * Positioning: visual navigation and GNSS interference protection; developed by
- * infiniDome for uncrewed aircraft; Globaz Technologies is the India contact for
- * integration enquiries, platform evaluation and support discussions.
- * No performance figures, specifications, certifications, compatibility claims,
- * documents or customer references are stated anywhere on the page.
+ * Sources (all statements on the page must trace to one of these):
+ *  [G]  globaztechnologies.com — home and About pages (corporate profile, credentials)
+ *  [GP] globaztechnologies.com/product/ironav — IroNav description, differentiators,
+ *       technical specifications and use cases as published by Globaz Technologies
+ *  [W]  Globaz IroNav wireframe (comdez.co.uk/globaz-wireframes/ironav.html)
+ *
+ * IroNav is developed by infiniDome. Globaz Technologies is the integration and
+ * evaluation contact in India. Visualisations on the page are illustrative and
+ * are labelled as such; none is presented as a recorded product demonstration.
  */
 
 export const LINKS = {
-  email: 'info@globaztechnologies.com',
-  contactPage: 'https://www.globaztechnologies.com/contact',
   globaz: 'https://www.globaztechnologies.com',
+  productPage: 'https://www.globaztechnologies.com/product/ironav',
   infinidome: 'https://infinidome.com/ironav/',
 } as const;
 
-export const mailto = (subject: string, body = '') =>
-  `mailto:${LINKS.email}?subject=${encodeURIComponent(subject)}${body ? `&body=${encodeURIComponent(body)}` : ''}`;
-
 export const NAV = [
-  { id: 'overview', n: '01', label: 'Overview' },
-  { id: 'anatomy', n: '02', label: 'Anatomy' },
-  { id: 'motion', n: '03', label: 'Motion' },
-  { id: 'technology', n: '04', label: 'Technology' },
-  { id: 'integration', n: '05', label: 'Integration' },
-  { id: 'evidence', n: '06', label: 'Evidence' },
+  { id: 'globaz', n: '01', label: 'Globaz' },
+  { id: 'context', n: '02', label: 'Context' },
+  { id: 'product', n: '03', label: 'Product' },
+  { id: 'architecture', n: '04', label: 'Architecture' },
+  { id: 'operations', n: '05', label: 'Operations' },
+  { id: 'integration', n: '06', label: 'Integration' },
 ] as const;
 
 export const HERO = {
-  category: 'Air Systems / Resilient Navigation',
+  category: 'Navigation & Communication Resilience', // [GP] vertical name
   headline: ['Navigation', 'Beyond GNSS', 'Dependency.'],
-  sub: 'Visual navigation and GNSS interference protection for uncrewed aircraft.',
-  developer: 'Developed by infiniDome',
-  india: 'Integration enquiries through Globaz Technologies',
-  primary: 'Explore IroNav',
-  secondary: 'Discuss Platform Integration',
+  // [GP] "IroNav combines autonomous visual navigation with battle-proven GNSS anti-jamming."
+  sub: 'Autonomous visual navigation and GNSS anti-jamming in a single pod for uncrewed aircraft.',
+  attribution: [
+    { k: 'Developer', v: 'infiniDome' },
+    { k: 'India', v: 'Globaz Technologies — integration and evaluation' },
+  ],
+  figure: 'IroNav-integrated multirotor platform',
 };
 
-export const INTRO = {
+export const GLOBAZ = {
   index: '01',
-  label: 'Overview',
-  statement: 'For uncrewed aircraft that must plan for operation where satellite positioning may be disrupted or unavailable.',
+  label: 'Globaz Technologies',
+  // [G] About: "an Indian defence and aerospace systems integrator ... build, integrate and field mission-ready systems"
+  headline: 'An Indian defence and aerospace systems integrator.',
   body: [
-    'IroNav brings visual navigation and GNSS interference protection to uncrewed aircraft. It is developed by infiniDome.',
-    'In India, Globaz Technologies is the contact for integration enquiries, platform evaluation and support discussions.',
+    'Globaz Technologies builds, integrates and fields mission-ready systems for the Indian Armed Forces, Central Armed Police Forces, security agencies and OEMs seeking a capable Indian partner.',
+    'Its portfolio spans land, air, naval and maritime systems, with a dedicated focus on navigation and communication resilience for operations in contested electromagnetic environments.',
   ],
-  facts: [
-    { k: 'Technology developer', v: 'infiniDome' },
-    { k: 'Application', v: 'Uncrewed aircraft' },
-    { k: 'India integration enquiries', v: 'Globaz Technologies' },
-    { k: 'Configuration and availability', v: 'Discuss with Globaz' },
+  // [G] credentials as published
+  credentials: [
+    { v: 'AS9100D · ISO 9001:2015', k: 'Certified quality management' },
+    { v: 'Industrial Licence', k: 'Defence manufacturing' },
+    { v: '25,000+ sq ft', k: 'Manufacturing and assembly facility, Noida' },
+    { v: '7', k: 'Global OEM partners' },
   ],
+  // [G] portfolio: Full-Spectrum Resilience / Navigation & Enablers
+  vertical: {
+    title: 'Navigation & Enablers',
+    items: ['IroNav', 'SunStone', 'Aura', 'OptiPilot', 'WonderLand', 'HoverSafe', 'Halo'],
+  },
+  // [G] news: "infiniDome Announces Strategic Partnership with Globaz Technologies"
+  partnership: 'IroNav is developed by infiniDome. Globaz Technologies and infiniDome have announced a strategic partnership for India.',
+  facilityCaption: 'Globaz Technologies',
+};
+
+export const CONTEXT = {
+  index: '02',
+  label: 'Operational context',
+  headline: 'When satellite navigation cannot be assumed.',
+  intro:
+    'Uncrewed aircraft depend on GNSS for position. In contested electromagnetic environments that signal may be jammed, denied or unavailable. IroNav is designed for exactly this condition.',
+  // [GP] description + differentiators
+  states: [
+    {
+      id: 'protected',
+      k: 'GNSS available',
+      title: 'Protected reception',
+      body: 'While GNSS is available, null-steering anti-jamming protects the protected bands.',
+    },
+    {
+      id: 'denied',
+      k: 'GNSS jammed or denied',
+      title: 'Automatic fallback',
+      body: 'GPS availability voting detects degradation and hands over without operator input.',
+    },
+    {
+      id: 'visual',
+      k: 'Visual navigation',
+      title: 'Map-free continuity',
+      body: 'Navigation continues by visual reference to the terrain below — no pre-loaded maps required.',
+    },
+  ],
+  note: 'Illustrative visualisation of published operating principles. Terrain: licensed aerial imagery.',
+};
+
+export const PRODUCT = {
+  index: '03',
+  label: 'The product',
+  headline: 'One pod. Two layers of resilience.',
+  // [GP] key differentiators
+  points: [
+    'GNSS anti-jamming and GNSS-independent visual navigation in a single pod',
+    'Map-free visual navigation — no pre-loaded maps required',
+    'GPS availability voting with automatic fallback, without operator input',
+    'Compatible with MAVLink flight controllers — rotary, FPV and VTOL',
+    'Optional precision landing on moving or maritime platforms',
+  ],
+  // [GP] technical specifications, as published
+  specs: [
+    { k: 'Dimensions', v: '132 × 62.5 × 76.5 mm' },
+    { k: 'Weight', v: '400 g, single pod' },
+    { k: 'Protected GNSS bands', v: 'L1/E1 + L2 · L1/E1 + G1' },
+    { k: 'GNSS protection', v: 'Null-steering anti-jamming' },
+    { k: 'Anti-jamming gain', v: '−40 dB' },
+    { k: 'Optical sensor', v: 'Visible / thermal / LRF' },
+    { k: 'Field of view', v: '90–110°' },
+    { k: 'Navigation accuracy', v: '~2–5% distance deviation; operational from 0 m altitude' },
+    { k: 'Integration', v: 'MAVLink protocol' },
+  ],
+  specSource: 'Specifications as published by Globaz Technologies. Configuration-specific performance is confirmed during evaluation.',
+  viewNote: 'Product view from the original photograph. A full 360° presentation requires multi-angle product photography or authorised CAD data.',
 };
 
 export const ANATOMY = {
-  index: '02',
-  label: 'Anatomy',
-  stages: [
-    { id: 'original', kicker: 'The aircraft', title: 'As photographed.', body: 'A multirotor platform with the IroNav module mounted beneath the central assembly. Scroll to take it apart, one assembly at a time.' },
-    { id: 'propellers', kicker: 'Stage 01 · Propellers', title: 'Propellers, one by one.', body: 'Each propeller layer lifts away from its motor along its own axis.' },
-    { id: 'motors', kicker: 'Stage 02 · Motor assemblies', title: 'Motors, with their mounts.', body: 'Upper and lower motor assemblies detach individually — X-plate mounts and clamp blocks included.' },
-    { id: 'arms', kicker: 'Stage 03 · Carbon-fibre arms', title: 'Arms, released.', body: 'The tubular carbon-fibre arms separate progressively from the central frame.' },
-    { id: 'gear', kicker: 'Stage 04 · Landing gear', title: 'Landing gear, lowered away.', body: 'Legs and skids detach and move downwards, clear of the airframe.' },
-    { id: 'electronics', kicker: 'Stage 05 · Electronics', title: 'The upper enclosure lifts clear.', body: 'The upper electronic enclosure and its antennas separate from the frame.' },
-    { id: 'cables', kicker: 'Stage 06 · Cables & connectors', title: 'Cabling, where it can be isolated.', body: 'Copper RF leads, helical antennas and the shielded cable separate. Cables that run inside other parts stay with them.' },
-    { id: 'ironav', kicker: 'Stage 07 · The module', title: 'IroNav', body: 'Visual navigation and GNSS interference protection.' },
-    { id: 'exploded', kicker: 'Exploded view', title: 'Twenty-three layers.', body: 'Every isolated component in one engineering layout — still exactly as the camera recorded it.' },
-    { id: 'reassemble', kicker: 'Reassembly', title: 'Engineered for navigation resilience.', body: 'Every layer returns to its exact position. The photograph is restored pixel for pixel.' },
-  ],
-  moduleLine: 'Developed by infiniDome for uncrewed aircraft.',
-  note: 'All imagery: the original product photograph and layers cut from it. No generated or reconstructed imagery.',
-};
-
-export const FILM = {
-  index: '03',
-  label: 'Motion studies',
-  title: 'Studied in motion.',
-  intro: 'Short loops built from the original product photograph — traced, approached and taken apart.',
-  clips: [
-    { id: 'module', n: '01', title: 'Approach', caption: 'A slow approach to the IroNav module beneath the central assembly.', aspect: '16 / 9' },
-    { id: 'scan', n: '02', title: 'Line study', caption: 'The photograph and its own line trace, revealed by a scan.', aspect: '1160 / 558' },
-    { id: 'layers', n: '03', title: 'Assemblies', caption: 'The photograph’s layers drift apart and return.', aspect: '1160 / 558' },
-  ],
-  note: 'Motion studies created from the original product photograph.',
-};
-
-export const TECH = {
   index: '04',
-  label: 'Technology',
-  headline: ['Visual Navigation.', 'Resilient Operations.'],
-  intro: 'Three ideas define how IroNav is positioned by its developer.',
-  pillars: [
+  label: 'Platform architecture',
+  stages: [
+    { id: 'original', kicker: 'Integrated platform', title: 'A complete airframe.', body: 'IroNav mounts beneath the central assembly of a coaxial multirotor platform.' },
+    { id: 'propellers', kicker: 'Propulsion', title: 'Rotor assemblies.', body: 'Upper and lower rotors, separated along their motor axes.' },
+    { id: 'motors', kicker: 'Propulsion', title: 'Motor assemblies.', body: 'Coaxial motor pairs with their X-plate mounts and clamp blocks.' },
+    { id: 'arms', kicker: 'Structure', title: 'Carbon-fibre arms.', body: 'Tubular arms released from the central frame.' },
+    { id: 'gear', kicker: 'Structure', title: 'Landing gear.', body: 'Carbon legs and skids lowered clear of the airframe.' },
+    { id: 'electronics', kicker: 'Avionics', title: 'Upper equipment enclosure.', body: 'The upper enclosure and antennas lifted from the frame.' },
+    { id: 'cables', kicker: 'Interfaces', title: 'Cabling and connectors.', body: 'RF leads and antennas separated where independently visible.' },
+    { id: 'ironav', kicker: 'Navigation payload', title: 'IroNav', body: 'Autonomous visual navigation and GNSS anti-jamming. Developed by infiniDome.' },
+    { id: 'exploded', kicker: 'Exploded view', title: 'Platform architecture.', body: 'Every isolated assembly in its exploded position.' },
+    { id: 'reassemble', kicker: 'Integrated platform', title: 'Engineered for navigation resilience.', body: 'Each assembly returns to its exact position.' },
+  ],
+  note: 'Original product photograph separated into its visible assemblies.',
+};
+
+export const OPERATIONS = {
+  index: '05',
+  label: 'Operational applications',
+  headline: 'Where navigation resilience matters.',
+  // [GP] use cases, as published
+  uses: [
+    { title: 'GPS-denied urban operations', body: 'Autonomous navigation and landing where GPS is blocked by buildings or electronic warfare.' },
+    { title: 'GPS-jammed military operations', body: 'Anti-jamming protects GPS while available; optical navigation sustains continuity when jammed.' },
+    { title: 'ISR in contested environments', body: 'Sustained autonomous flight and data collection under active GPS denial.' },
+    { title: 'Border and perimeter surveillance', body: 'Autonomous patrol in GPS-challenged terrain without pre-mapped routes.' },
+    { title: 'Maritime moving-platform landing', body: 'Precision autonomous landing on underway vessels — optional upgrade module.' },
+  ],
+  films: [
     {
-      id: 'visual',
-      n: '01',
-      title: 'Visual navigation',
-      body: 'IroNav is positioned as a visual navigation technology for uncrewed aircraft — a reference that does not rest on satellite positioning alone.',
-      video: {
-        desktop: 'vehicle-desktop',
-        mobile: 'vehicle-mobile',
-        label: 'Aerial footage of a truck on a highway bridge, with the IroNav-integrated aircraft and an illustrative tracking beam composited in',
-        caption: 'A moving ground vehicle kept in view from the air. The aircraft and beam are an illustrative composite.',
-        credit: { title: 'The Atchafalaya Basin Bridge And Whiskey Bay Pilot Channel Drone Video', author: 'Third Coast Drone', href: 'https://commons.wikimedia.org/wiki/File:The_Atchafalaya_Basin_Bridge_And_Whiskey_Bay_Pilot_Channel_Drone_Video.webm' },
-      },
+      id: 'vehicle',
+      k: 'Visual reference in motion',
+      title: 'Ground vehicle in view.',
+      body: 'An aerial platform holds a moving ground vehicle within its field of view across changing perspectives.',
+      label: 'Licensed aerial footage of a truck on a highway bridge, composited with the IroNav-integrated aircraft and an illustrative field-of-view graphic',
+      disclaimer: 'Illustrative composite. Not a recorded IroNav demonstration; the beam depicts a field of view, not an emitted laser.',
+      credit: { title: 'The Atchafalaya Basin Bridge And Whiskey Bay Pilot Channel Drone Video', author: 'Third Coast Drone', href: 'https://commons.wikimedia.org/wiki/File:The_Atchafalaya_Basin_Bridge_And_Whiskey_Bay_Pilot_Channel_Drone_Video.webm', licence: 'CC BY 3.0', licenceHref: 'https://creativecommons.org/licenses/by/3.0/', changes: 'Trimmed, reframed, graded and composited.' },
     },
     {
-      id: 'gnss',
-      n: '02',
-      title: 'GNSS interference protection',
-      body: 'Alongside visual navigation, IroNav is presented by infiniDome as providing GNSS interference protection — relevant where satellite positioning may be disrupted or unavailable.',
-      video: {
-        desktop: 'building-desktop',
-        mobile: 'building-mobile',
-        label: 'Aerial footage exploring one lighthouse building from four viewpoints, with the IroNav-integrated aircraft composited in',
-        caption: 'One structure, observed from four viewpoints. The aircraft and beam are an illustrative composite.',
-        credit: { title: 'Cape Neddick Nubble Lighthouse - York, Maine 4k Drone flight - DJI Air2S', author: 'Dave Halter', href: 'https://commons.wikimedia.org/wiki/File:Cape_Neddick_Nubble_Lighthouse_-_York,_Maine_4k_Drone_flight_-_DJI_Air2S.webm' },
-      },
+      id: 'installation',
+      k: 'Infrastructure and perimeter',
+      title: 'One installation, six viewpoints.',
+      body: 'A former military storage installation observed from the air — perimeter, watchtower, hardened shelters and bunkers.',
+      label: 'Licensed aerial footage of a former military ammunition storage installation from six viewpoints',
+      disclaimer: 'Illustrative footage. Not a recorded IroNav demonstration.',
+      credit: { title: 'Sondermunitionslager Dülmen-Visbeck', author: 'Dietmar Rabich', href: 'https://commons.wikimedia.org/wiki/File:Sondermunitionslager_D%C3%BClmen-Visbeck.webm', licence: 'CC BY-SA 4.0', licenceHref: 'https://creativecommons.org/licenses/by-sa/4.0/', changes: 'Trimmed, reframed, graded and annotated; this adaptation is shared under CC BY-SA 4.0.' },
     },
-    {
-      id: 'uas',
-      n: '03',
-      title: 'Uncrewed aircraft',
-      body: 'Developed by infiniDome for uncrewed aircraft. Suitability for a specific airframe and mission is assessed case by case with Globaz Technologies.',
-    },
-  ] as { id: string; n: string; title: string; body: string; video?: { desktop: string; mobile: string; label: string; caption: string; credit: { title: string; author: string; href: string } } }[],
-  footnote: 'Videos are illustrative composites of licensed third-party aerial footage with the IroNav product photograph and graphic overlays. They are not recordings of an IroNav demonstration, and the beam depicts a field of view, not an emitted laser. For technical detail, start with infiniDome’s published overview.',
+  ],
 };
 
 export const INTEGRATION = {
-  index: '05',
-  label: 'Platform integration',
-  title: 'Fit is assessed for your configuration.',
-  intro: 'Every integration discussion starts from the aircraft you fly and the mission you plan for.',
-  items: [
-    {
-      id: 'mission',
-      n: '01',
-      title: 'Mission requirement',
-      body: 'Evaluate navigation requirements where satellite positioning may be disrupted or unavailable.',
-      points: ['Operating environment', 'Where satellite positioning may be disrupted', 'Where it may be unavailable'],
-    },
-    {
-      id: 'aircraft',
-      n: '02',
-      title: 'Aircraft compatibility',
-      body: 'Review airframe interfaces, sensor placement, size, weight and power requirements for your configuration.',
-      points: ['Airframe interfaces', 'Sensor placement', 'Size', 'Weight', 'Power requirements'],
-    },
-    {
-      id: 'india',
-      n: '03',
-      title: 'Globaz’s role in India',
-      body: 'Discuss the integration, evaluation and support scope for your programme.',
-      points: ['Integration', 'Evaluation', 'Available support scope'],
-    },
-  ],
-  caveat: 'Considerations for your configuration — not confirmed compatibility.',
-};
-
-export const EVIDENCE = {
   index: '06',
-  label: 'Technical information',
-  title: 'Technical information and evidence.',
-  intro: 'Start with the OEM’s published technical overview. Ask Globaz which test results and integration documents are available for your configuration.',
-  rows: [
-    { n: '01', title: 'OEM product overview', body: 'infiniDome’s published overview of IroNav.', action: 'View on infiniDome', href: LINKS.infinidome, external: true },
-    { n: '02', title: 'Integration information', body: 'Interfaces, placement and installation considerations for your airframe.', action: 'Ask Globaz', href: mailto('IroNav — Integration information'), external: false },
-    { n: '03', title: 'Configuration discussions', body: 'Platform-specific technical questions, discussed with the Globaz team.', action: 'Start a discussion', href: mailto('IroNav — Configuration discussion'), external: false },
-    { n: '04', title: 'Evaluation documentation', body: 'Which test results and integration documents are available for your configuration.', action: 'Request availability', href: mailto('IroNav — Evaluation documentation'), external: false },
+  label: 'Integration in India',
+  headline: 'From platform assessment to lifecycle support.',
+  intro: 'Platform fit is assessed against each customer’s aircraft configuration and mission requirement.',
+  // [W] considerations + [G] "integration, field trials and post-delivery support", DAP 2020 / Make in India
+  steps: [
+    { n: '01', title: 'Mission requirement', body: 'Navigation requirements where satellite positioning may be disrupted or unavailable.' },
+    { n: '02', title: 'Platform compatibility', body: 'Airframe interfaces, sensor placement, size, weight and power for the specific configuration.' },
+    { n: '03', title: 'Integration and field trials', body: 'Integration on the customer platform and evaluation in representative conditions.' },
+    { n: '04', title: 'Lifecycle support', body: 'Post-delivery support from Globaz Technologies in India.' },
   ],
+  procurement: 'Globaz Technologies supports programmes under DAP 2020 and the Make in India framework.',
+  caveat: 'Considerations for each configuration — not confirmed compatibility.',
 };
 
-export const ENQUIRY = {
-  index: '07',
-  label: 'Enquiry',
-  title: 'Explore IroNav for Your Platform.',
-  body: 'Discuss your aircraft configuration, integration requirements and technical evaluation with Globaz Technologies.',
-  note: 'Share a brief, non-sensitive summary. The team can arrange the appropriate channel for programme and technical details.',
-  paths: [
-    { n: '01', title: 'Request a Technical Briefing', body: 'Discuss platform fit and available evaluation material.', subject: 'IroNav — Technical briefing request' },
-    { n: '02', title: 'Discuss Platform Integration', body: 'Ask about integrating IroNav on your platform.', subject: 'IroNav — Platform integration' },
-    { n: '03', title: 'Discuss an RFI/RFP', body: 'Discuss your requirement and India support scope.', subject: 'IroNav — RFI/RFP discussion' },
+export const CLOSING = {
+  statement: 'IroNav — developed by infiniDome. Presented, integrated and supported in India by Globaz Technologies.',
+  offices: [
+    { k: 'Corporate office', v: '101, First Floor, Worldmark-4B, Aerocity, New Delhi 110037' },
+    { k: 'Electronics facility', v: 'B-92, Sector 88, Noida 201305, Uttar Pradesh' },
   ],
-  offices: 'Corporate office in New Delhi · Electronics facility in Noida',
+  footnote: 'Visualisations on this page are illustrative and are not recorded product demonstrations. Third-party footage is credited where shown.',
 };

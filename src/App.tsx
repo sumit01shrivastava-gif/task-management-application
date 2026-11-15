@@ -3,13 +3,12 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { TopBar } from './components/layout/TopBar';
 import { Footer } from './components/layout/Footer';
 import { Hero } from './components/sections/Hero';
-import { Intro } from './components/sections/Intro';
+import { Globaz } from './components/sections/Globaz';
+import { Context } from './components/sections/Context';
+import { Product } from './components/sections/Product';
 import { Anatomy } from './components/sections/Anatomy';
-import { Film } from './components/sections/Film';
-import { Technology } from './components/sections/Technology';
+import { Operations } from './components/sections/Operations';
 import { Integration } from './components/sections/Integration';
-import { Evidence } from './components/sections/Evidence';
-import { Enquiry } from './components/sections/Enquiry';
 import { useHashLinks, useReveal, useSmoothScroll } from './hooks/useSmoothScroll';
 import { usePrefersReducedMotion } from './hooks/useMotion';
 
@@ -35,13 +34,12 @@ export default function App() {
       <TopBar />
       <main id="main">
         <Hero />
-        <Intro />
+        <Globaz />
+        <Context />
+        <Product />
         <Anatomy />
-        <Film />
-        <Technology />
+        <Operations />
         <Integration />
-        <Evidence />
-        <Enquiry />
       </main>
       <Footer />
     </>

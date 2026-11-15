@@ -28,7 +28,7 @@ export function LoopVideo({ name: deskName, aspect: deskAspect, label, base = '/
   const reduced = usePrefersReducedMotion();
   const [near, setNear] = useState(false);
   const [failed, setFailed] = useState(false);
-  const poster = `${base}${name}-poster.jpg`;
+  const poster = `${base}${name}-poster.webp`;
 
   useEffect(() => {
     const el = wrap.current;
@@ -59,13 +59,13 @@ export function LoopVideo({ name: deskName, aspect: deskAspect, label, base = '/
           loop
           playsInline
           preload={near ? 'auto' : 'none'}
-          poster={poster}
+          poster={near ? poster : undefined}
           aria-label={label}
           onError={() => setFailed(true)}
           disablePictureInPicture
         >
-          {near && <source src={`${base}${name}.webm`} type="video/webm" />}
-          {near && <source src={`${base}${name}.mp4`} type="video/mp4" onError={() => setFailed(true)} />}
+          {near && <source src={`${base}${name}.mp4`} type="video/mp4" />}
+          {near && <source src={`${base}${name}.webm`} type="video/webm" onError={() => setFailed(true)} />}
         </video>
       )}
     </div>

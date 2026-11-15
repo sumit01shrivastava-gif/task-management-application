@@ -19,6 +19,7 @@ export interface LayerInfo {
   y: number;
   w: number;
   h: number;
+  soft: string;
   outline: { file: string; x: number; y: number; w: number; h: number };
   anchor: [number, number];
   /** Exploded-view displacement in original-image pixels. */
