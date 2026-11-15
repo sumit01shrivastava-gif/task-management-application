@@ -10,7 +10,7 @@ import { ProductPortfolio } from './components/sections/ProductPortfolio';
 import { BrahmastraSection } from './components/sections/BrahmastraSection';
 import { ContactSection } from './components/sections/ContactSection';
 import { useHashLinks, useReveal, useSmoothScroll } from './hooks/useSmoothScroll';
-import { usePrefersReducedMotion } from './hooks/useQualityTier';
+import { usePrefersReducedMotion } from './hooks/useMotion';
 
 export default function App() {
   const reduced = usePrefersReducedMotion();

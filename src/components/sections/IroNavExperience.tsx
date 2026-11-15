@@ -1,62 +1,111 @@
-import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { experience, ironav } from '../../content/site';
-import { createRig } from '../../three/rig/rig';
-import { buildExperienceTimeline, PIN_VIEWPORTS, STAGES, stageProgress, TIMELINE_LENGTH } from '../../three/config/timeline';
-import { useInView, usePrefersReducedMotion, useQualityTier } from '../../hooks/useQualityTier';
+import { GROUPS, MODULE_NOTES, manifest } from '../../exploded/config';
+import { createState } from '../../exploded/state';
+import { PhotoExplodeRenderer, type LabelPos } from '../../exploded/renderer';
+import { buildTimeline, PIN_VIEWPORTS, STAGES, stageProgress, TIMELINE_LENGTH } from '../../exploded/timeline';
+import { useInView, usePrefersReducedMotion } from '../../hooks/useMotion';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { scrollToTarget } from '../../hooks/useSmoothScroll';
-import { webglAvailable } from '../../three/webgl';
-import { ANNOTATIONS } from '../../three/scene/annotationSpecs';
 import { Arrow } from '../ui/Icons';
 import { ENQUIRY_EVENT } from './ContactSection';
-import { RENDER_STILL } from './HeroSection';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const ExperienceCanvas = lazy(() => import('../../three/ExperienceCanvas'));
-
-const STAGE_SHORT = ['Platform', 'Rotation', 'Exploded view', 'IroNav', 'Conceptual internals', 'Reassembly'];
-
 /**
- * Section 02 — the pinned, scroll-scrubbed 3D drone disassembly.
- * Layout + captions live here; all 3D logic lives in `src/three`.
+ * Section 02 — scroll-controlled exploded view of the ORIGINAL photograph.
+ * Each component is a layer cut from the photo (see scripts/segment_layers.py).
  */
 export function IroNavExperience() {
   const reduced = usePrefersReducedMotion();
-  const tier = useQualityTier();
   const narrow = useMediaQuery('(max-width: 860px)');
-  const rig = useMemo(() => createRig(), []);
-  const [gl] = useState(() => webglAvailable());
+  const state = useMemo(() => createState(), []);
 
   const section = useRef<HTMLElement>(null);
+  const stage = useRef<HTMLDivElement>(null);
+  const canvas = useRef<HTMLCanvasElement>(null);
+  const renderer = useRef<PhotoExplodeRenderer | null>(null);
   const captions = useRef<HTMLDivElement[]>([]);
+  const groupEls = useRef<(HTMLDivElement | null)[]>([]);
+  const noteEls = useRef<(HTMLDivElement | null)[]>([]);
   const fill = useRef<HTMLDivElement>(null);
-  const readAz = useRef<HTMLSpanElement>(null);
-  const readEl = useRef<HTMLSpanElement>(null);
-  const readEx = useRef<HTMLSpanElement>(null);
+  const readSep = useRef<HTMLSpanElement>(null);
   const tlRef = useRef<gsap.core.Timeline | null>(null);
   const stRef = useRef<ScrollTrigger | null>(null);
   const [activeStage, setActiveStage] = useState(0);
-  const labels = useRef<(HTMLElement | null)[]>([]);
+  const [loaded, setLoaded] = useState(false);
+  const [failed, setFailed] = useState(false);
 
-  // Lazy-mount the 3D canvas shortly before the section is reached.
-  const near = useInView(section, '120% 0px');
+  const near = useInView(section, '150% 0px');
   const onScreen = useInView(section, '0px');
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    if (near) setMounted(true);
-  }, [near]);
 
+  // Lazy-load the layers shortly before the section is reached.
+  useEffect(() => {
+    if (!near || renderer.current || !canvas.current) return;
+    const r = new PhotoExplodeRenderer(canvas.current);
+    renderer.current = r;
+    if (import.meta.env.DEV) (window as unknown as { __ironav: unknown }).__ironav = { state, renderer: r };
+    r.load().then(
+      () => setLoaded(true),
+      () => setFailed(true),
+    );
+  }, [near, state]);
+
+  // Size the canvas to the stage.
+  useEffect(() => {
+    const el = stage.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => {
+      const r = renderer.current;
+      if (!r) return;
+      r.resize(el.clientWidth, el.clientHeight, narrow ? 'mobile' : 'desktop');
+      r.draw(state);
+    });
+    ro.observe(el);
+    renderer.current?.resize(el.clientWidth, el.clientHeight, narrow ? 'mobile' : 'desktop');
+    return () => ro.disconnect();
+  }, [narrow, loaded, state]);
+
+  // Render loop while on screen.
+  useEffect(() => {
+    if (!onScreen || !loaded) return;
+    const place = (els: (HTMLDivElement | null)[], pos: LabelPos[], w: number) =>
+      pos.forEach((p, i) => {
+        const el = els[i];
+        if (!el) return;
+        const vis = p.a > 0.01;
+        el.style.opacity = vis ? String(p.a) : '0';
+        el.style.visibility = vis ? 'visible' : 'hidden';
+        if (!vis) return;
+        const cw = (el.firstElementChild as HTMLElement | null)?.offsetWidth ?? 0;
+        const left = el.dataset.align === 'left';
+        const x = left ? Math.max(p.x, cw + 12) : Math.min(p.x, w - cw - 12);
+        el.style.transform = `translate3d(${x.toFixed(1)}px, ${p.y.toFixed(1)}px, 0)`;
+      });
+    const tick = () => {
+      const r = renderer.current;
+      if (!r) return;
+      r.draw(state);
+      const w = stage.current?.clientWidth ?? 0;
+      place(groupEls.current, r.groupLabels, w);
+      place(noteEls.current, r.noteLabels, w);
+      if (readSep.current) readSep.current.textContent = `${Math.round(state.sep * 100)}%`;
+    };
+    gsap.ticker.add(tick);
+    return () => gsap.ticker.remove(tick);
+  }, [onScreen, loaded, state]);
+
+  // Scroll-scrubbed master timeline.
   useLayoutEffect(() => {
     const el = section.current;
     if (!el) return;
     const ctx = gsap.context(() => {
-      const tl = buildExperienceTimeline(rig, captions.current, fill.current);
+      const tl = buildTimeline(state, captions.current, fill.current);
       tlRef.current = tl;
       if (reduced) {
-        tl.progress(stageProgress(0));
+        tl.progress(0);
         return;
       }
       stRef.current = ScrollTrigger.create({
@@ -64,7 +113,6 @@ export function IroNavExperience() {
         start: 'top top',
         end: () => `+=${window.innerHeight * (narrow ? PIN_VIEWPORTS.mobile : PIN_VIEWPORTS.desktop)}`,
         pin: true,
-        pinSpacing: true,
         scrub: narrow ? 0.6 : 0.9,
         animation: tl,
         anticipatePin: 1,
@@ -73,7 +121,7 @@ export function IroNavExperience() {
           const t = self.progress * TIMELINE_LENGTH;
           let idx = 0;
           STAGES.forEach((s, i) => t >= s.start && (idx = i));
-          setActiveStage((prev) => (prev === idx ? prev : idx));
+          setActiveStage((p) => (p === idx ? p : idx));
         },
       });
     }, el);
@@ -82,21 +130,7 @@ export function IroNavExperience() {
       tlRef.current = null;
       ctx.revert();
     };
-  }, [rig, reduced, narrow]);
-
-  // Technical readout (reads rig values, no React renders).
-  useEffect(() => {
-    if (!onScreen) return;
-    const tick = () => {
-      const az = ((((rig.yaw * 180) / Math.PI) % 360) + 360) % 360;
-      const el = (Math.atan2(rig.camY - rig.tgtY, Math.hypot(rig.camX - rig.tgtX, rig.camZ - rig.tgtZ)) * 180) / Math.PI;
-      if (readAz.current) readAz.current.textContent = `${az.toFixed(0).padStart(3, '0')}°`;
-      if (readEl.current) readEl.current.textContent = `${el.toFixed(0).padStart(2, '0')}°`;
-      if (readEx.current) readEx.current.textContent = `${Math.round(rig.explode * 100)}%`;
-    };
-    gsap.ticker.add(tick);
-    return () => gsap.ticker.remove(tick);
-  }, [onScreen, rig]);
+  }, [state, reduced, narrow]);
 
   const goToStage = (i: number) => {
     const tl = tlRef.current;
@@ -113,46 +147,51 @@ export function IroNavExperience() {
   const setCaption = (i: number) => (node: HTMLDivElement | null) => {
     if (node) captions.current[i] = node;
   };
-
   const s = experience.stages;
-  const offsetX = narrow ? 0 : -0.13;
-  const offsetY = narrow ? 0.16 : 0;
 
   return (
-    <section ref={section} id="experience" className={`xp ${reduced ? 'xp--reduced' : ''}`} aria-label="Interactive IroNav platform experience">
+    <section ref={section} id="experience" className={`xp ${reduced ? 'xp--reduced' : ''}`} aria-label="Interactive IroNav exploded view of the product photograph">
       <div className="xp__pin">
-        <div className="xp__canvas">
-          {gl ? (
-            mounted && (
-              <Suspense
-                fallback={
-                  <div className="xp__fallback">
-                    <span className="xp__loader">
-                      <i /> Loading 3D model
-                    </span>
-                  </div>
-                }
-              >
-                <ExperienceCanvas rig={rig} tier={tier} active={onScreen} still={reduced} offsetX={offsetX} offsetY={offsetY} fov={narrow ? 44 : 32} labels={labels} />
-              </Suspense>
-            )
-          ) : (
+        <div className="xp__canvas" ref={stage}>
+          <canvas ref={canvas} className="xp__photo" role="img" aria-label="Original photograph of the IroNav-integrated multirotor, separating into its visible components" />
+          {!loaded && !failed && (
             <div className="xp__fallback">
-              <img src={RENDER_STILL} alt="Conceptual render of the IroNav-integrated multirotor aircraft" style={{ maxWidth: '70%' }} />
+              <span className="xp__loader">
+                <i /> Loading photograph layers
+              </span>
+            </div>
+          )}
+          {failed && (
+            <div className="xp__fallback">
+              <img src="/media/ironav-original.png" alt="IroNav-integrated multirotor aircraft" style={{ maxWidth: '72%' }} />
             </div>
           )}
         </div>
         <div className="xp__vignette" />
 
         <div className="xp__labels" aria-hidden>
-          {ANNOTATIONS.map((a, i) => (
-            <div key={i} className="annot-pos" ref={(el) => void (labels.current[i] = el)}>
-              <div className={`annot annot--${a.align ?? 'right'}`}>
-                <span className="annot__title">{a.title}</span>
-                {a.sub && <span className="annot__sub">{a.sub}</span>}
+          {GROUPS.map((g, i) => {
+            const align = g.labelOffset[0] < 0 ? 'left' : 'right';
+            return (
+              <div key={g.id} className="annot-pos" data-align={align} ref={(el) => void (groupEls.current[i] = el)}>
+                <div className={`annot annot--${align}`}>
+                  <span className="annot__title">{g.title}</span>
+                  <span className="annot__sub">{g.sub}</span>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
+          {MODULE_NOTES.map((n, i) => {
+            const align = n.offset[0] < 0 ? 'left' : 'right';
+            return (
+              <div key={n.title} className="annot-pos" data-align={align} ref={(el) => void (noteEls.current[i] = el)}>
+                <div className={`annot annot--${align}`}>
+                  <span className="annot__title">{n.title}</span>
+                  <span className="annot__sub">{n.sub}</span>
+                </div>
+              </div>
+            );
+          })}
         </div>
 
         <div className="xp__frame" aria-hidden>
@@ -164,75 +203,44 @@ export function IroNavExperience() {
             <span>
               <b>IroNav</b> / Integrated platform
             </span>
-            <span>Stage {String(activeStage + 1).padStart(2, '0')} / 06</span>
-            <span>{STAGE_SHORT[activeStage]}</span>
+            <span>Stage {String(activeStage + 1).padStart(2, '0')} / 05</span>
+            <span>{STAGES[activeStage].label}</span>
           </div>
           <div className="xp__note">{experience.modelNote}</div>
         </div>
 
         <div className="xp__captions">
-          {/* 01 */}
-          <div className="caption" ref={setCaption(0)}>
-            <div className="caption__index">
-              <b>{s[0].index}</b> {s[0].kicker}
+          {s.map((st, i) => (
+            <div key={st.id} className={`caption ${st.id === 'ironav' ? 'caption--ironav' : ''}`} ref={setCaption(i)}>
+              <div className="caption__index">
+                <b>{st.index}</b> {st.kicker}
+              </div>
+              {st.id === 'ironav' ? (
+                <>
+                  <h2>{ironav.name}</h2>
+                  <p>{ironav.tagline}.</p>
+                  <p className="caption__dev">{ironav.developer}</p>
+                  <div className="caption__actions">
+                    <a className="btn btn--blue" href="#ironav">
+                      Explore IroNav <Arrow />
+                    </a>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h2>{st.title}</h2>
+                  <p>{st.body}</p>
+                  {st.id === 'reassemble' && (
+                    <div className="caption__actions">
+                      <a className="btn btn--primary" href="#contact" onClick={() => window.dispatchEvent(new CustomEvent(ENQUIRY_EVENT, { detail: 'briefing' }))}>
+                        Request a Technical Briefing <Arrow />
+                      </a>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
-            <h2>{s[0].title}</h2>
-            <p>{s[0].body}</p>
-          </div>
-          {/* 02 */}
-          <div className="caption" ref={setCaption(1)}>
-            <div className="caption__index">
-              <b>{s[1].index}</b> {s[1].kicker}
-            </div>
-            <h2>{s[1].title}</h2>
-            <p>{s[1].body}</p>
-          </div>
-          {/* 03 */}
-          <div className="caption" ref={setCaption(2)}>
-            <div className="caption__index">
-              <b>{s[2].index}</b> {s[2].kicker}
-            </div>
-            <h2>{s[2].title}</h2>
-            <p>{s[2].body}</p>
-          </div>
-          {/* 04 IroNav */}
-          <div className="caption caption--ironav" ref={setCaption(3)}>
-            <div className="caption__index">
-              <b>{s[3].index}</b> {s[3].kicker}
-            </div>
-            <h2>{ironav.name}</h2>
-            <p>{ironav.tagline}</p>
-            <p className="caption__dev">{ironav.developer}</p>
-            <div className="caption__actions">
-              <a className="btn btn--blue" href="#ironav">
-                Explore IroNav <Arrow />
-              </a>
-            </div>
-          </div>
-          {/* 05 Conceptual internals */}
-          <div className="caption" ref={setCaption(4)}>
-            <div className="caption__index">
-              <b>{s[4].index}</b> {s[4].kicker}
-            </div>
-            <h2>{s[4].title}</h2>
-            <p>{s[4].body}</p>
-            <p className="caption__disclaimer" role="note">
-              {experience.disclaimer}
-            </p>
-          </div>
-          {/* 06 Reassembly */}
-          <div className="caption" ref={setCaption(5)}>
-            <div className="caption__index">
-              <b>{s[5].index}</b> {s[5].kicker}
-            </div>
-            <h2>{s[5].title}</h2>
-            <p>{s[5].body}</p>
-            <div className="caption__actions">
-              <a className="btn btn--primary" href="#contact" onClick={() => window.dispatchEvent(new CustomEvent(ENQUIRY_EVENT, { detail: 'briefing' }))}>
-                Request a Technical Briefing <Arrow />
-              </a>
-            </div>
-          </div>
+          ))}
         </div>
 
         <nav className="hud" aria-label="Experience stages">
@@ -240,11 +248,11 @@ export function IroNavExperience() {
             <div className="hud__fill" ref={fill} />
           </div>
           <ol className="hud__stages">
-            {STAGE_SHORT.map((label, i) => (
-              <li key={label}>
+            {STAGES.map((st, i) => (
+              <li key={st.id}>
                 <button className={i === activeStage ? 'is-active' : ''} onClick={() => goToStage(i)} aria-current={i === activeStage ? 'step' : undefined}>
                   <b>{String(i + 1).padStart(2, '0')}</b>
-                  <span>{label}</span>
+                  <span>{st.label}</span>
                 </button>
               </li>
             ))}
@@ -252,19 +260,19 @@ export function IroNavExperience() {
         </nav>
 
         <div className="hud__readout" aria-hidden>
-          <span>Azimuth</span>
-          <span ref={readAz}>000°</span>
-          <span>Elevation</span>
-          <span ref={readEl}>00°</span>
+          <span>Source</span>
+          <span>Original photo</span>
+          <span>Layers</span>
+          <span>{manifest.layers.length}</span>
           <span>Separation</span>
-          <span ref={readEx}>0%</span>
+          <span ref={readSep}>0%</span>
         </div>
 
         {reduced && (
           <div className="xp__steps" role="group" aria-label="Choose a view">
-            {STAGE_SHORT.map((label, i) => (
-              <button key={label} className={`chip ${i === activeStage ? 'is-active' : ''}`} onClick={() => goToStage(i)}>
-                {label}
+            {STAGES.map((st, i) => (
+              <button key={st.id} className={`chip ${i === activeStage ? 'is-active' : ''}`} onClick={() => goToStage(i)}>
+                {st.label}
               </button>
             ))}
           </div>

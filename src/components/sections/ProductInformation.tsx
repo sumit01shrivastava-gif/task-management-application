@@ -1,23 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { hero, productInfo } from '../../content/site';
 import { External, PillarIcon } from '../ui/Icons';
-import { PRODUCT_PHOTO } from './HeroSection';
 
-const RENDERS = [
-  { id: 'assembled', label: 'Assembled', src: '/media/render-assembled.png', alt: 'Conceptual render of the assembled IroNav-integrated multirotor' },
-  { id: 'exploded', label: 'Exploded', src: '/media/render-exploded.png', alt: 'Conceptual exploded-view render of the multirotor assemblies' },
-  { id: 'module', label: 'Module', src: '/media/render-module.png', alt: 'Conceptual render of the IroNav module exterior' },
+const VIEWS = [
+  { id: 'aircraft', label: 'Aircraft', src: '/media/ironav-original.png', alt: 'Multirotor aircraft with integrated IroNav module (original photograph)', caption: 'Original product photograph' },
+  { id: 'module', label: 'IroNav module', src: '/media/ironav-layers/ironav-module.webp', alt: 'IroNav module, isolated from the original photograph', caption: 'Module layer from the original photograph' },
 ];
 
 /** Section 03 — Understanding IroNav. */
 export function ProductInformation() {
-  const [photo, setPhoto] = useState(false);
-  useEffect(() => {
-    const i = new Image();
-    i.onload = () => setPhoto(true);
-    i.src = PRODUCT_PHOTO;
-  }, []);
-  const views = photo ? [{ id: 'photo', label: 'Photo', src: PRODUCT_PHOTO, alt: 'Multirotor aircraft with integrated IroNav module' }, ...RENDERS] : RENDERS;
+  const views = VIEWS;
   const [view, setView] = useState(0);
   const current = views[Math.min(view, views.length - 1)];
 
@@ -55,7 +47,7 @@ export function ProductInformation() {
               />
             ))}
             <figcaption className="info__caption">
-              <span>{current.id === 'photo' ? 'Product photograph' : 'Conceptual 3D render'}</span>
+              <span>{current.caption}</span>
               <span>IroNav / infiniDome</span>
             </figcaption>
           </figure>

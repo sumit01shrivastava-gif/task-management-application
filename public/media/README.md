@@ -1,9 +1,12 @@
-# Media drop-in slots
+# Media
 
-Place approved client imagery here. The site picks these up automatically at runtime:
+| Path | What it is |
+| ---- | ---------- |
+| `ironav-original.png` | The client's original product photograph (IMG_5771.png), byte-identical copy. SHA-256 `d9518ea4597063b2144ec092028e0b5afb49d659af2f9c56d41fafca91026d54`. Never modified. |
+| `ironav-layers/*.webp` | Component layers cut from the original by `scripts/segment_layers.py` (lossless WebP, exact RGB/alpha). |
+| `ironav-layers/*-outline.webp` | Highlight rings derived from each layer's own silhouette. |
+| `ironav-layers/manifest.json` | Layer ids, groups, pixel offsets in the original image, callout anchors and explode vectors. |
 
-| File                 | Used by                                   | Behaviour if missing                           |
-| -------------------- | ----------------------------------------- | ---------------------------------------------- |
-| `IMG_5771.png`       | Hero visual + "Understanding IroNav" image | Hero falls back to the live 3D drone render    |
-
-Transparent-background PNGs are preserved (the hero composites them over the dark stage).
+The layers partition the photograph's pixels, so stacked at their offsets they reproduce
+the original exactly (the script verifies this on every run). No imagery is generated,
+redrawn or in-filled.

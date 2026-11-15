@@ -52,25 +52,25 @@ export const ironav = {
 export const experience = {
   stages: [
     {
-      id: 'reveal',
+      id: 'original',
       index: '01',
-      kicker: 'Platform',
+      kicker: 'Original product',
       title: ironav.platformLabel,
-      body: 'A multirotor uncrewed aircraft with an IroNav module mounted beneath the central assembly.',
+      body: 'The actual aircraft, as photographed: a multirotor platform with an IroNav module mounted beneath the central assembly.',
     },
     {
-      id: 'orbit',
+      id: 'highlight',
       index: '02',
-      kicker: 'Airframe',
-      title: 'One platform, every angle.',
-      body: 'Carbon-fibre arms, coaxial motor and propeller assemblies, landing gear and the central equipment stack.',
+      kicker: 'Components',
+      title: 'Every visible assembly, identified.',
+      body: 'Propellers, motor assemblies, carbon-fibre arms, central airframe, landing gear, electronics, cabling and the IroNav module.',
     },
     {
-      id: 'explode',
+      id: 'separate',
       index: '03',
-      kicker: 'Exploded assembly',
-      title: 'Separated along its build axes.',
-      body: 'Each major assembly moves along a deliberate path so the integration of the aircraft remains readable.',
+      kicker: 'Exploded view',
+      title: 'Separated, as photographed.',
+      body: 'Each component is a layer cut from the original photograph and keeps its photographic appearance. Hidden surfaces are not recreated.',
     },
     {
       id: 'ironav',
@@ -80,24 +80,14 @@ export const experience = {
       body: ironav.tagline,
     },
     {
-      id: 'internals',
-      index: '05',
-      kicker: 'Conceptual visualisation',
-      title: 'An illustrative look inside.',
-      body: 'Circuit board, processing components, connectors, interfaces and enclosure — shown as a conceptual exploded view.',
-    },
-    {
       id: 'reassemble',
-      index: '06',
+      index: '05',
       kicker: 'Integration',
       title: 'Engineered for navigation resilience.',
       body: 'Explore IroNav and discuss integration possibilities for your uncrewed aircraft platform with Globaz Technologies.',
     },
   ],
-  disclaimer:
-    'Illustrative CGI only. These elements are conceptual and do not represent the verified internal architecture of IroNav.',
-  modelNote:
-    'Conceptual 3D representation based on the reference photograph. Not CAD-derived; proportions are approximate.',
+  modelNote: 'All imagery is the original product photograph, split into aligned layers. No generated or reconstructed imagery.',
 };
 
 export const productInfo = {
