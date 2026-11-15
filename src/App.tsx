@@ -1,14 +1,15 @@
 import { useEffect } from 'react';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Header } from './components/layout/Header';
+import { TopBar } from './components/layout/TopBar';
 import { Footer } from './components/layout/Footer';
-import { HeroSection } from './components/sections/HeroSection';
-import { IroNavExperience } from './components/sections/IroNavExperience';
-import { ProductInformation } from './components/sections/ProductInformation';
-import { IntegrationSection } from './components/sections/IntegrationSection';
-import { ProductPortfolio } from './components/sections/ProductPortfolio';
-import { BrahmastraSection } from './components/sections/BrahmastraSection';
-import { ContactSection } from './components/sections/ContactSection';
+import { Hero } from './components/sections/Hero';
+import { Intro } from './components/sections/Intro';
+import { Anatomy } from './components/sections/Anatomy';
+import { Film } from './components/sections/Film';
+import { Technology } from './components/sections/Technology';
+import { Integration } from './components/sections/Integration';
+import { Evidence } from './components/sections/Evidence';
+import { Enquiry } from './components/sections/Enquiry';
 import { useHashLinks, useReveal, useSmoothScroll } from './hooks/useSmoothScroll';
 import { usePrefersReducedMotion } from './hooks/useMotion';
 
@@ -20,7 +21,6 @@ export default function App() {
   useReveal();
 
   useEffect(() => {
-    // Recalculate pin positions once fonts and late images settle.
     const refresh = () => ScrollTrigger.refresh();
     document.fonts?.ready.then(refresh);
     window.addEventListener('load', refresh);
@@ -32,15 +32,16 @@ export default function App() {
       <a className="skip" href="#main">
         Skip to content
       </a>
-      <Header />
+      <TopBar />
       <main id="main">
-        <HeroSection />
-        <IroNavExperience />
-        <ProductInformation />
-        <IntegrationSection />
-        <ProductPortfolio />
-        <BrahmastraSection />
-        <ContactSection />
+        <Hero />
+        <Intro />
+        <Anatomy />
+        <Film />
+        <Technology />
+        <Integration />
+        <Evidence />
+        <Enquiry />
       </main>
       <Footer />
     </>

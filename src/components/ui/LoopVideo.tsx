@@ -1,0 +1,65 @@
+import { useEffect, useRef, useState } from 'react';
+import { usePrefersReducedMotion } from '../../hooks/useMotion';
+
+interface Props {
+  name: string;
+  /** CSS aspect-ratio, e.g. "16 / 9". */
+  aspect: string;
+  label: string;
+  base?: string;
+  className?: string;
+}
+
+/**
+ * Muted, inline, looping clip that only loads near the viewport and only
+ * plays while visible. Falls back to its poster (reduced motion, errors,
+ * or browsers that refuse autoplay).
+ */
+export function LoopVideo({ name, aspect, label, base = '/media/derived/clips/', className = '' }: Props) {
+  const ref = useRef<HTMLVideoElement>(null);
+  const wrap = useRef<HTMLDivElement>(null);
+  const reduced = usePrefersReducedMotion();
+  const [near, setNear] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const poster = `${base}${name}-poster.jpg`;
+
+  useEffect(() => {
+    const el = wrap.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting) setNear(true);
+        const v = ref.current;
+        if (!v || reduced) return;
+        if (e.isIntersecting && e.intersectionRatio > 0.15) v.play().catch(() => undefined);
+        else v.pause();
+      },
+      { rootMargin: '300px 0px', threshold: [0, 0.15, 0.5] },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [reduced]);
+
+  return (
+    <div ref={wrap} className={`loop ${className}`} style={{ aspectRatio: aspect }}>
+      {failed || reduced ? (
+        <img src={poster} alt={label} loading="lazy" />
+      ) : (
+        <video
+          ref={ref}
+          muted
+          loop
+          playsInline
+          preload={near ? 'auto' : 'none'}
+          poster={poster}
+          aria-label={label}
+          onError={() => setFailed(true)}
+          disablePictureInPicture
+        >
+          {near && <source src={`${base}${name}.webm`} type="video/webm" />}
+          {near && <source src={`${base}${name}.mp4`} type="video/mp4" onError={() => setFailed(true)} />}
+        </video>
+      )}
+    </div>
+  );
+}
