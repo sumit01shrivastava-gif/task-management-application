@@ -1,5 +1,5 @@
 import { EXPLODE_FACTOR, FOCUS, GROUPS, IMG_H, IMG_W, LAYOUT, MEDIA_BASE, MODULE_ID, MODULE_NOTES, ORIGINAL_SRC, manifest, type GroupId, type LayerInfo, type Mode } from './config';
-import { easeInOut, staggered, type ExplodeState } from './state';
+import { easeInOut, isAssembled, type ExplodeState } from './state';
 
 interface Loaded {
   info: LayerInfo;
@@ -111,7 +111,8 @@ export class PhotoExplodeRenderer {
 
   private placement(l: Loaded, s: ExplodeState) {
     const f = EXPLODE_FACTOR[this.mode];
-    const k = staggered(s.sep, l.delay);
+    // per-layer progress, already eased by its own GSAP tween
+    const k = s.p[l.info.id] ?? 0;
     const ds = 1 + l.depth * k;
     const w = l.info.w * ds;
     const h = l.info.h * ds;
@@ -164,7 +165,7 @@ export class PhotoExplodeRenderer {
       ctx.fillRect(cx - 440, cy - 440, 880, 880);
     }
 
-    const assembled = s.sep <= 0.0005 && s.focus <= 0.0005 && s.dim <= 0.0005;
+    const assembled = isAssembled(s);
     if (assembled) {
       // The original photograph, untouched.
       ctx.globalAlpha = 1;
@@ -240,9 +241,7 @@ export class PhotoExplodeRenderer {
     GROUPS.forEach((g, i) => {
       const l = this.layers.find((x) => x.info.id === g.anchorLayer);
       const out = this.groupLabels[i];
-      const hlA = clamp((s.hl[g.id] - 0.35) / 0.65);
-      const exA = !desktop && g.id !== 'ironav' ? 0 : s.labels;
-      const a = Math.max(hlA, exA) * (1 - s.dim);
+      const a = clamp(s.lab[g.id]) * (1 - s.dim);
       out.a = a;
       if (!l || a <= 0.01) return;
       const p = placements.get(l.info.id)!;

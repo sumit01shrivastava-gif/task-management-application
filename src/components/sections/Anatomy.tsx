@@ -3,9 +3,9 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ANATOMY } from '../../content/ironav';
 import { CAMERA, GROUPS, MODULE_NOTES, manifest, type Mode } from '../../exploded/config';
-import { createState } from '../../exploded/state';
+import { createState, detachedCount } from '../../exploded/state';
 import { PhotoExplodeRenderer, type LabelPos } from '../../exploded/renderer';
-import { buildTimeline, PIN_VIEWPORTS, STAGES, stageProgress, TIMELINE_LENGTH } from '../../exploded/timeline';
+import { buildTimeline, PIN_VIEWPORTS, SNAP_POINTS, STAGES, stageProgress, TIMELINE_LENGTH } from '../../exploded/timeline';
 import { useInView, usePrefersReducedMotion } from '../../hooks/useMotion';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { scrollToTarget } from '../../hooks/useSmoothScroll';
@@ -101,7 +101,7 @@ export function Anatomy() {
       el.style.setProperty('--vx', `${r.view.x.toFixed(1)}px`);
       el.style.setProperty('--vy', `${r.view.y.toFixed(1)}px`);
       el.style.setProperty('--vs', r.view.s.toFixed(3));
-      if (readSep.current) readSep.current.textContent = `${Math.round(state.sep * 100)}%`;
+      if (readSep.current) readSep.current.textContent = `${detachedCount(state)} / ${manifest.layers.length - 1}`;
       if (readZoom.current) readZoom.current.textContent = `${state.cam.z.toFixed(2)}×`;
     };
     gsap.ticker.add(tick);
@@ -125,6 +125,10 @@ export function Anatomy() {
         pin: true,
         scrub: mode === 'mobile' ? 0.6 : 1,
         animation: tl,
+        // touch scrolling is native (no Lenis): settle each fling on one stage
+        ...(window.matchMedia('(pointer: coarse)').matches
+          ? { snap: { snapTo: SNAP_POINTS, duration: { min: 0.3, max: 0.8 }, delay: 0.08, ease: 'power1.inOut', directional: true } }
+          : {}),
         anticipatePin: 1,
         invalidateOnRefresh: true,
         onUpdate: (self) => {
@@ -247,8 +251,8 @@ export function Anatomy() {
           <span>Original photograph</span>
           <span>Layers</span>
           <span>{manifest.layers.length}</span>
-          <span>Separation</span>
-          <span ref={readSep}>0%</span>
+          <span>Detached</span>
+          <span ref={readSep}>0 / 22</span>
           <span>Camera</span>
           <span ref={readZoom}>1.00×</span>
         </div>

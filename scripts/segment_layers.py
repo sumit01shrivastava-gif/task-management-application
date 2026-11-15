@@ -80,15 +80,21 @@ FRAME = ('frame', 'frame', 'Central carbon-fibre frame')
 
 # Exploded-view direction for each layer, in original-image pixels.
 EXPLODE = {
-    'prop-front-left-upper': (-150, -95), 'prop-front-left-lower': (-150, 85), 'prop-front-right-upper': (95, -120),
-    'prop-rear-right-upper': (170, -70), 'prop-rear-right-lower': (170, 85),
-    'motor-front-left-upper': (-95, -45), 'motor-front-left-lower': (-95, 45), 'motor-front-right-upper': (70, -65),
-    'motor-front-right-lower': (70, 50), 'motor-rear-right-upper': (125, -25), 'motor-rear-right-lower': (125, 50),
-    'arm-front-left': (-48, 0), 'arm-front-right': (40, -22), 'arm-rear-right': (55, 8),
-    'electronics': (0, -95),
-    'gear-left': (-40, 85), 'gear-right': (40, 85),
-    'cable-helix': (-95, 55), 'cable-lead-left': (-70, 30), 'cable-top-antenna': (-40, -75), 'cable-black': (80, 55),
-    'ironav-module': (0, 70),
+    # upper band: upper propellers / motors rise and fan outwards
+    'prop-front-left-upper': (-190, -120), 'prop-front-right-upper': (120, -150), 'prop-rear-right-upper': (215, -95),
+    'motor-front-left-upper': (-120, -58), 'motor-front-right-upper': (85, -82), 'motor-rear-right-upper': (150, -32),
+    # lower band: lower propellers / motors drop and fan outwards
+    'prop-front-left-lower': (-190, 112), 'prop-rear-right-lower': (215, 118),
+    'motor-front-left-lower': (-120, 62), 'motor-front-right-lower': (85, 68), 'motor-rear-right-lower': (150, 72),
+    # structure: arms slide out along their own axes
+    'arm-front-left': (-62, 0), 'arm-front-right': (52, -28), 'arm-rear-right': (72, 10),
+    # stack: enclosure lifts clear, landing gear drops clear
+    'electronics': (0, -128),
+    'gear-left': (-56, 128), 'gear-right': (56, 128),
+    # cabling fans to the sides
+    'cable-helix': (-118, 62), 'cable-lead-left': (-88, 36), 'cable-top-antenna': (-46, -98), 'cable-black': (98, 62),
+    # module drops forward between the legs
+    'ironav-module': (0, 88),
     'frame': (0, 0),
 }
 

@@ -1043,43 +1043,42 @@ ul {
 .anat__nav {
   position: absolute;
   right: var(--gutter);
-  top: 50%;
-  transform: translateY(-50%);
+  top: calc(var(--bar) + 16px);
 }
 .anat__nav ol {
-  display: grid;
-  gap: 16px;
-  border-right: 1px solid var(--hair-2);
-  padding-right: 18px;
+  display: flex;
+  gap: 4px;
 }
 .anat__nav button {
   display: flex;
-  justify-content: flex-end;
-  gap: 12px;
+  gap: 8px;
   align-items: baseline;
-  width: 100%;
   background: none;
   border: 0;
-  padding: 2px 0;
+  border-bottom: 1px solid var(--hair-2);
+  padding: 6px 6px 8px;
   cursor: pointer;
   font-family: var(--mono);
   font-size: 10.5px;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--ink-3);
-  transition: color 0.3s;
+  transition: color 0.3s, border-color 0.3s;
 }
 .anat__nav button span {
-  opacity: 0;
-  transition: opacity 0.3s;
+  display: none;
 }
 .anat__nav button:hover span,
 .anat__nav button:focus-visible span,
 .anat__nav button.is-active span {
-  opacity: 1;
+  display: inline;
+}
+.anat__nav button:hover {
+  color: var(--ink-2);
 }
 .anat__nav button.is-active {
   color: var(--ink);
+  border-color: var(--amber);
 }
 .anat__nav button.is-active b {
   color: var(--amber);
@@ -1166,12 +1165,17 @@ ul {
     padding: 0;
   }
   .anat__nav button {
-    width: 30px;
+    width: 23px;
     height: 30px;
+    padding: 0;
+    font-size: 9.5px;
+    letter-spacing: 0.04em;
     justify-content: center;
     align-items: center;
   }
-  .anat__nav button span {
+  .anat__nav button span,
+  .anat__nav button.is-active span,
+  .anat__nav button:hover span {
     display: none;
   }
   .anat__readout {

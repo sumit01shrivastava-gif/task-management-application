@@ -50,11 +50,22 @@ src/exploded/timeline.ts    GSAP master timeline (scrubbed) — six stages
 src/exploded/renderer.ts    canvas renderer in original-image pixel space
 ```
 
-Stages: original photograph → component highlighting (with a light sweep) → controlled
-separation → fully exploded → IroNav module focus (depth of field on everything else) →
-reassembly. The camera's last keyframe equals its first and, at rest, the renderer draws
-the original photograph itself — verified in the browser as **0 differing pixels** after
-scrolling down and back up (append `?verify` to the URL to expose the read-only state).
+### Sequential disassembly
+
+Ten stages, each with its own scroll interval (~1 viewport; the pin is 11 viewports on
+desktop, 10 on mobile). Every layer has its own progress value, and layers detach one at
+a time within their stage, staying in their exploded positions afterwards:
+
+1. original photograph · 2. propellers (5, one by one) · 3. motor assemblies (6) ·
+4. carbon-fibre arms (3) · 5. landing gear (2, downwards) · 6. upper electronic enclosure ·
+7. cables & connectors (4) · 8. IroNav module (detaches, comes to the camera, enlarges) ·
+9. labelled exploded composition · 10. reassembly in reverse order.
+
+The order and layer lists live in `SEQUENCE` (`src/exploded/config.ts`); explode vectors in
+`scripts/segment_layers.py`. On touch devices ScrollTrigger snaps each fling to a stage's
+hold point. Scrolling back reverses every layer to its exact origin; at rest the renderer
+draws the original photograph itself — verified in the browser as **0 differing pixels**
+after scrolling down and back up (append `?verify` to the URL to expose the read-only state).
 
 ## Motion studies and the film slot
 

@@ -53,7 +53,7 @@ export const GROUPS: {
   { id: 'frame', title: 'Central airframe', sub: 'Stacked carbon plates', anchorLayer: 'frame', labelOffset: [-330, 60], delay: 0, depth: 0 },
   { id: 'gear', title: 'Landing gear', sub: 'Carbon legs and skids', anchorLayer: 'gear-right', labelOffset: [150, 40], delay: 0.2, depth: -0.03 },
   { id: 'electronics', title: 'Upper electronic enclosure', sub: 'With antennas', anchorLayer: 'electronics', labelOffset: [-60, -150], delay: 0.06, depth: 0.03 },
-  { id: 'cables', title: 'Cables & connectors', sub: 'Copper RF leads, helical antennas', anchorLayer: 'cable-helix', labelOffset: [-170, 70], delay: 0.22, depth: 0.02 },
+  { id: 'cables', title: 'Cables & connectors', sub: 'Copper RF leads, helical antennas', anchorLayer: 'cable-helix', labelOffset: [70, 120], delay: 0.22, depth: 0.02 },
   { id: 'ironav', title: 'IroNav module', sub: 'Mounted beneath the central assembly', anchorLayer: 'ironav-module', labelOffset: [250, 110], delay: 0.28, depth: 0.05 },
 ];
 
@@ -88,24 +88,76 @@ export const FOCUS = {
 };
 
 /**
- * Camera keyframes per stage: centre (image px) and zoom (×fit scale).
- * The first and last keyframes are identical, so the closing frame is the
- * opening frame — the original photograph, exactly.
+ * The disassembly sequence. Each stage owns a dedicated scroll interval and
+ * detaches its layers one after another, in the order listed. Layers detached
+ * in earlier stages stay in their exploded positions.
  */
-export const CAMERA = {
+export type StageId =
+  | 'original'
+  | 'propellers'
+  | 'motors'
+  | 'arms'
+  | 'gear'
+  | 'electronics'
+  | 'cables'
+  | 'ironav'
+  | 'exploded'
+  | 'reassemble';
+
+export const SEQUENCE: { id: StageId; label: string; group?: GroupId; layers: string[] }[] = [
+  { id: 'original', label: 'Aircraft', layers: [] },
+  {
+    id: 'propellers',
+    label: 'Propellers',
+    group: 'propellers',
+    layers: ['prop-front-left-upper', 'prop-front-right-upper', 'prop-rear-right-upper', 'prop-front-left-lower', 'prop-rear-right-lower'],
+  },
+  {
+    id: 'motors',
+    label: 'Motors',
+    group: 'motors',
+    layers: ['motor-front-left-upper', 'motor-front-right-upper', 'motor-rear-right-upper', 'motor-front-left-lower', 'motor-front-right-lower', 'motor-rear-right-lower'],
+  },
+  { id: 'arms', label: 'Arms', group: 'arms', layers: ['arm-front-left', 'arm-front-right', 'arm-rear-right'] },
+  { id: 'gear', label: 'Landing gear', group: 'gear', layers: ['gear-left', 'gear-right'] },
+  { id: 'electronics', label: 'Electronics', group: 'electronics', layers: ['electronics'] },
+  { id: 'cables', label: 'Cables', group: 'cables', layers: ['cable-top-antenna', 'cable-lead-left', 'cable-black', 'cable-helix'] },
+  { id: 'ironav', label: 'IroNav', group: 'ironav', layers: ['ironav-module'] },
+  { id: 'exploded', label: 'Exploded', layers: [] },
+  { id: 'reassemble', label: 'Reassembly', layers: [] },
+];
+
+type Cam = { x: number; y: number; z: number };
+
+/**
+ * Camera keyframe for each stage (centre in image px, zoom × fit scale).
+ * 'original' is used for both the first and the last frame, so the closing
+ * frame is the opening frame — the original photograph, exactly.
+ */
+export const CAMERA: Record<Mode, Record<StageId, Cam>> = {
   desktop: {
     original: { x: IMG_W * 0.5, y: IMG_H * 0.5, z: 1 },
-    highlight: { x: IMG_W * 0.54, y: IMG_H * 0.5, z: 1.07 },
-    separate: { x: IMG_W * 0.5, y: IMG_H * 0.52, z: 0.9 },
-    exploded: { x: IMG_W * 0.5, y: IMG_H * 0.5, z: 0.8 },
+    propellers: { x: IMG_W * 0.49, y: IMG_H * 0.5, z: 0.82 },
+    motors: { x: IMG_W * 0.49, y: IMG_H * 0.5, z: 0.82 },
+    arms: { x: IMG_W * 0.48, y: IMG_H * 0.5, z: 0.81 },
+    gear: { x: IMG_W * 0.48, y: IMG_H * 0.58, z: 0.8 },
+    electronics: { x: IMG_W * 0.47, y: IMG_H * 0.5, z: 0.77 },
+    cables: { x: IMG_W * 0.46, y: IMG_H * 0.52, z: 0.75 },
     ironav: { x: IMG_W * 0.5, y: IMG_H * 0.46, z: 1.0 },
+    exploded: { x: IMG_W * 0.45, y: IMG_H * 0.5, z: 0.73 },
+    reassemble: { x: IMG_W * 0.5, y: IMG_H * 0.5, z: 1 },
   },
   mobile: {
     original: { x: IMG_W * 0.5, y: IMG_H * 0.52, z: 1.42 },
-    highlight: { x: IMG_W * 0.36, y: IMG_H * 0.5, z: 1.42 },
-    highlight2: { x: IMG_W * 0.66, y: IMG_H * 0.52, z: 1.42 },
-    separate: { x: IMG_W * 0.5, y: IMG_H * 0.5, z: 1.05 },
-    exploded: { x: IMG_W * 0.5, y: IMG_H * 0.48, z: 0.98 },
+    // while parts separate, frame the whole airframe with margin so nothing clips
+    propellers: { x: IMG_W * 0.5, y: IMG_H * 0.48, z: 0.88 },
+    motors: { x: IMG_W * 0.5, y: IMG_H * 0.5, z: 0.88 },
+    arms: { x: IMG_W * 0.5, y: IMG_H * 0.5, z: 0.88 },
+    gear: { x: IMG_W * 0.5, y: IMG_H * 0.58, z: 0.88 },
+    electronics: { x: IMG_W * 0.5, y: IMG_H * 0.5, z: 0.88 },
+    cables: { x: IMG_W * 0.5, y: IMG_H * 0.52, z: 0.88 },
     ironav: { x: IMG_W * 0.5, y: IMG_H * 0.42, z: 1.12 },
+    exploded: { x: IMG_W * 0.5, y: IMG_H * 0.52, z: 0.86 },
+    reassemble: { x: IMG_W * 0.5, y: IMG_H * 0.52, z: 1.42 },
   },
 };
