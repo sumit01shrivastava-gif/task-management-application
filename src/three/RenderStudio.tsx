@@ -7,7 +7,8 @@ import { RigCamera } from './scene/Stage';
 import { createRig, type Rig } from './rig/rig';
 
 const POSES: Record<string, Partial<Rig>> = {
-  assembled: { camX: 5.3, camY: 2.05, camZ: 6.6, tgtY: 0.05, yaw: -0.35 },
+  reference: { camX: 0.9, camY: 0.05, camZ: 6.6, tgtY: -0.05, yaw: -0.2 },
+  assembled: { camX: 6.0, camY: 2.2, camZ: 7.5, tgtY: 0.05, yaw: -0.35 },
   exploded: { camX: 7.2, camY: 3.9, camZ: 9.8, tgtY: 0.45, yaw: -0.35, explode: 1 },
   module: { camX: 1.55, camY: 0.95, camZ: 5.3, tgtY: 1.17, tgtZ: 2.0, yaw: 0, explode: 1, focus: 1, dim: 1, glow: 0.6 },
 };

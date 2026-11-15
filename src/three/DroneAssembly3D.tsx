@@ -1,7 +1,7 @@
 import { useCallback, useContext, useEffect, useMemo, useRef, type ReactNode } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { armDir, droneConfig, ironavFocus, levels, type PartId } from './config/droneConfig';
+import { armDir, droneConfig, ironavFocus, levels, lowerExplode, type PartId } from './config/droneConfig';
 import { createMaterials } from './materials/materials';
 import { DroneContext, type DroneCtx, type ExplodeEntry } from './scene/DroneContext';
 import { ExplodeGroup } from './scene/ExplodeGroup';
@@ -161,13 +161,31 @@ function DroneParts({ entries }: { entries: React.RefObject<ExplodeEntry[]> }) {
             </ExplodeGroup>
           ))}
 
+          {/* lower (inverted) coaxial motors and propellers */}
+          {droneConfig.coaxial &&
+            dirs.map((d, i) => (
+              <ExplodeGroup key={`lmotor${i}`} part="motors" radialDir={d} spec={lowerExplode.motors} name={`lower-motor-${i}`} position={[d[0] * droneConfig.armLength, levels.lowerMotorBaseY, d[2] * droneConfig.armLength]}>
+                <group rotation={[Math.PI, 0, 0]}>
+                  <Motor geo={motorGeo} />
+                </group>
+              </ExplodeGroup>
+            ))}
+          {droneConfig.coaxial &&
+            dirs.map((d, i) => (
+              <ExplodeGroup key={`lprop${i}`} part="propellers" radialDir={d} spec={lowerExplode.propellers} name={`lower-prop-${i}`} position={[d[0] * droneConfig.armLength, levels.lowerPropY, d[2] * droneConfig.armLength]}>
+                <group rotation={[Math.PI, 0, 0]}>
+                  <Propeller geo={propGeo} mirror={i % 2 === 0} ref={(el) => void (props.current[n + i] = el)} />
+                </group>
+              </ExplodeGroup>
+            ))}
+
           {([1, -1] as const).map((s) => (
-            <ExplodeGroup key={`lg${s}`} part="landingGear" name={`landing-gear-${s}`} spec={{ offset: [s * 0.45, -1.05, 0] }}>
+            <ExplodeGroup key={`lg${s}`} part="landingGear" name={`landing-gear-${s}`} spec={{ offset: [s * 0.5, -0.9, 0] }}>
               <LandingGearSide side={s} />
             </ExplodeGroup>
           ))}
 
-          <ExplodeGroup part="battery" position={[0, levels.batteryY, 0]}>
+          <ExplodeGroup part="battery" position={[droneConfig.battery.offsetX, levels.batteryY, 0.04]}>
             <Battery />
           </ExplodeGroup>
 

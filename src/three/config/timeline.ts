@@ -26,9 +26,9 @@ type Pose = { cam: [number, number, number]; tgt: [number, number, number] };
 
 export const CAMERA_POSES: Record<string, Pose> = {
   far: { cam: [7.2, 3.6, 9.6], tgt: [0, 0.1, 0] },
-  hero: { cam: [4.7, 1.9, 5.9], tgt: [0, 0.08, 0] },
-  side: { cam: [6.4, 1.2, 0.6], tgt: [0, 0.05, 0] },
-  top: { cam: [0.7, 10.2, 1.9], tgt: [0, 0, 0] },
+  hero: { cam: [5.7, 2.1, 7.1], tgt: [0, 0.0, 0] },
+  side: { cam: [7.4, 1.3, 0.7], tgt: [0, 0.0, 0] },
+  top: { cam: [0.7, 11.2, 2.0], tgt: [0, 0, 0] },
   wide: { cam: [7.2, 3.9, 9.8], tgt: [0, 0.45, 0] },
   module: { cam: [1.55, 0.95, 5.3], tgt: [0, 1.17, 2.0] },
   internals: { cam: [2.1, 2.2, 6.6], tgt: [0, 1.2, 2.0] },

@@ -63,7 +63,7 @@ export const experience = {
       index: '02',
       kicker: 'Airframe',
       title: 'One platform, every angle.',
-      body: 'Carbon-fibre arms, motor and propeller assemblies, landing gear and the central equipment stack.',
+      body: 'Carbon-fibre arms, coaxial motor and propeller assemblies, landing gear and the central equipment stack.',
     },
     {
       id: 'explode',
@@ -97,7 +97,7 @@ export const experience = {
   disclaimer:
     'Illustrative CGI only. These elements are conceptual and do not represent the verified internal architecture of IroNav.',
   modelNote:
-    'Conceptual 3D representation of the reference aircraft. Not CAD-derived; proportions are approximate.',
+    'Conceptual 3D representation based on the reference photograph. Not CAD-derived; proportions are approximate.',
 };
 
 export const productInfo = {

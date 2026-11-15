@@ -40,7 +40,7 @@ export default function ExperienceCanvas({ rig, tier, active, still, annotations
         antialias: tier !== 'low',
         powerPreference: 'high-performance',
         toneMapping: THREE.ACESFilmicToneMapping,
-        toneMappingExposure: 1.18,
+        toneMappingExposure: 1.32,
         outputColorSpace: THREE.SRGBColorSpace,
       }}
       aria-hidden

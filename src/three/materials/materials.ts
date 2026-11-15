@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { carbonTextures, glowTexture, labelTexture, pcbTexture } from './textures';
+import { carbonTextures, glowTexture, ironavPanelTexture, pcbTexture } from './textures';
 import type { QualityTier } from '../../hooks/useQualityTier';
 
 /**
@@ -51,6 +51,11 @@ export function createMaterials(tier: QualityTier) {
     cableAccent: new THREE.MeshStandardMaterial({ color: '#26303d', metalness: 0.2, roughness: 0.55 }),
     connector: new THREE.MeshStandardMaterial({ color: '#b8bdc3', metalness: 1, roughness: 0.28 }),
     propeller: new THREE.MeshStandardMaterial({ color: '#141518', metalness: 0.2, roughness: 0.42, side: THREE.DoubleSide }),
+    wireRed: new THREE.MeshStandardMaterial({ color: '#b3171b', metalness: 0.1, roughness: 0.5 }),
+    coax: new THREE.MeshStandardMaterial({ color: '#c07a4a', metalness: 1, roughness: 0.32 }),
+    gold: new THREE.MeshStandardMaterial({ color: '#d4a64e', metalness: 1, roughness: 0.25 }),
+    motorBlack: new THREE.MeshStandardMaterial({ color: '#141518', metalness: 0.55, roughness: 0.42 }),
+    silverBlock: new THREE.MeshStandardMaterial({ color: '#eceef0', metalness: 0.55, roughness: 0.32 }),
     ledGreen: new THREE.MeshStandardMaterial({ color: '#0b1a10', emissive: '#2bd46a', emissiveIntensity: 1.2 }),
     ledRed: new THREE.MeshStandardMaterial({ color: '#1a0b0b', emissive: '#ff3b30', emissiveIntensity: 1.2 }),
   };
@@ -58,9 +63,9 @@ export function createMaterials(tier: QualityTier) {
   // IroNav module materials (never dimmed)
   const ironav = {
     shell: new (physical ? THREE.MeshPhysicalMaterial : THREE.MeshStandardMaterial)({
-      color: '#1b1e23',
-      metalness: 0.7,
-      roughness: 0.34,
+      color: '#15171a',
+      metalness: 0.45,
+      roughness: 0.36,
       ...(physical ? { clearcoat: 0.4, clearcoatRoughness: 0.3 } : {}),
     }),
     shellEdge: new THREE.MeshStandardMaterial({ color: '#7d858e', metalness: 1, roughness: 0.26 }),
@@ -71,8 +76,9 @@ export function createMaterials(tier: QualityTier) {
       roughness: 0.05,
       ...(physical ? { clearcoat: 1, clearcoatRoughness: 0.02 } : {}),
     }),
-    accent: new THREE.MeshStandardMaterial({ color: '#0a1530', emissive: '#3d8bff', emissiveIntensity: 0.6 }),
-    label: new THREE.MeshBasicMaterial({ map: labelTexture('IroNav', 'infiniDome'), transparent: true, depthWrite: false }),
+    accent: new THREE.MeshStandardMaterial({ color: '#0b0d10', emissive: '#3d8bff', emissiveIntensity: 0 }),
+    label: new THREE.MeshStandardMaterial({ map: ironavPanelTexture(), transparent: true, roughness: 0.45, metalness: 0, depthWrite: false }),
+    sidePlate: new THREE.MeshStandardMaterial({ color: '#c9cdd2', metalness: 0.9, roughness: 0.28 }),
     pcb: new THREE.MeshStandardMaterial({ map: pcbTexture(tier === 'low' ? 256 : 512), metalness: 0.3, roughness: 0.55 }),
     chip: new THREE.MeshStandardMaterial({ color: '#0c0d0f', metalness: 0.2, roughness: 0.4 }),
     chipLid: new THREE.MeshStandardMaterial({ color: '#a7acb2', metalness: 1, roughness: 0.3 }),

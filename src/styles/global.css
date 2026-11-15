@@ -451,10 +451,10 @@ p {
 }
 .hero__image {
   position: absolute;
-  right: 2%;
-  top: 50%;
-  width: min(62vw, 980px);
-  transform: translateY(-48%);
+  right: -1%;
+  top: 58%;
+  width: min(52vw, 880px);
+  transform: translateY(-44%);
   filter: drop-shadow(0 40px 60px rgba(0, 0, 0, 0.6));
 }
 .hero__canvas {

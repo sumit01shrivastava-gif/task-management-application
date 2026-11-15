@@ -103,25 +103,6 @@ export function pcbTexture(size = 512) {
   return t;
 }
 
-/** Small engraved product label for the IroNav enclosure. */
-export function labelTexture(text: string, sub?: string) {
-  const [c, g] = canvas(512, 160);
-  g.clearRect(0, 0, 512, 160);
-  g.fillStyle = 'rgba(214,220,228,0.92)';
-  g.font = '600 74px "Inter Tight Variable", "Inter Tight", Arial, sans-serif';
-  g.textBaseline = 'middle';
-  g.fillText(text, 26, sub ? 66 : 80);
-  if (sub) {
-    g.fillStyle = 'rgba(160,170,182,0.75)';
-    g.font = '500 24px "JetBrains Mono", monospace';
-    g.fillText(sub, 30, 124);
-  }
-  const t = new THREE.CanvasTexture(c);
-  t.colorSpace = THREE.SRGBColorSpace;
-  t.anisotropy = 8;
-  return t;
-}
-
 /** Soft radial sprite used for the IroNav illumination halo. */
 export function glowTexture() {
   const [c, g] = canvas(128, 128);
@@ -133,5 +114,51 @@ export function glowTexture() {
   g.fillRect(0, 0, 128, 128);
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+
+/**
+ * Front panel of the IroNav enclosure as seen in the reference photograph:
+ * a white panel with a chevron-shaped right edge carrying the "IroNav" name.
+ * Transparent elsewhere so the black shell shows through.
+ */
+export function ironavPanelTexture() {
+  const W = 1024;
+  const H = 680;
+  const [c, g] = canvas(W, H);
+  g.clearRect(0, 0, W, H);
+  const x0 = 40;
+  const y0 = 70;
+  const x1 = 720; // start of chevron
+  const tip = 860;
+  const y1 = H - 70;
+  const r = 34;
+  g.beginPath();
+  g.moveTo(x0 + r, y0);
+  g.lineTo(x1, y0);
+  g.lineTo(tip, H / 2);
+  g.lineTo(x1, y1);
+  g.lineTo(x0 + r, y1);
+  g.quadraticCurveTo(x0, y1, x0, y1 - r);
+  g.lineTo(x0, y0 + r);
+  g.quadraticCurveTo(x0, y0, x0 + r, y0);
+  g.closePath();
+  g.fillStyle = '#eceef0';
+  g.fill();
+  // inner chevron accent
+  g.strokeStyle = 'rgba(20,22,26,0.18)';
+  g.lineWidth = 10;
+  g.beginPath();
+  g.moveTo(x1 - 40, y0 + 40);
+  g.lineTo(tip - 60, H / 2);
+  g.lineTo(x1 - 40, y1 - 40);
+  g.stroke();
+  g.fillStyle = '#141619';
+  g.font = '500 205px "Inter Tight Variable", "Inter Tight", Arial, sans-serif';
+  g.textBaseline = 'middle';
+  g.fillText('IroNav', x0 + 48, H / 2 + 10);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 8;
   return t;
 }

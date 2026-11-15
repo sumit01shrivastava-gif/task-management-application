@@ -19,9 +19,9 @@ figures, specifications, certifications or compatibility claims are made.
 
 * **Brahmastra:** no approved brand material was supplied, so the section makes no
   product claims. Add copy, points and an image in `brahmastra` in `site.ts`.
-* **Product photo:** drop the client image at `public/media/IMG_5771.png`. The hero
-  and the "Understanding IroNav" gallery pick it up automatically. Without it, the
-  hero shows the live 3D model.
+* **Product photo:** the client reference image is `public/media/IMG_5771.png`
+  (transparent background). The hero and the "Understanding IroNav" gallery use it
+  automatically; if removed, the hero falls back to the live 3D model.
 
 ## The 3D experience
 
@@ -43,12 +43,16 @@ Scrolling up reverses everything exactly.
 
 ### Replacing the conceptual model with CAD/GLB assets
 
-The model is a conceptual procedural approximation built from the written
-description of the reference aircraft. To swap in production assets, load the GLB
+The model is a conceptual procedural approximation of the reference photograph:
+a coaxial X8 (four carbon arms, upper and lower motor/propeller per arm, X-pattern
+mount plates with aluminium blocks), stacked-plate frame, strapped power enclosure,
+antennas, and the IroNav module with its white chevron name panel, side bracket,
+gold RF connectors and copper coax. Third-party branding visible in the photo is
+intentionally not reproduced. `/?render=reference` renders the model from roughly
+the photo's camera angle for side-by-side comparison. To swap in production assets, load the GLB
 (e.g. with `useGLTF`) and mount each node inside the matching `<ExplodeGroup part="…">`
 in `DroneAssembly3D.tsx` in place of the procedural part. Explode paths, timeline,
-annotations (by anchor name) and camera poses keep working unchanged. To match the
-reference airframe, adjust `armCount`, dimensions and `explodeConfig` in `droneConfig.ts`.
+annotations (by anchor name) and camera poses keep working unchanged. Dimensions, coaxial layout and `explodeConfig` live in `droneConfig.ts`.
 
 ### Still renders
 
