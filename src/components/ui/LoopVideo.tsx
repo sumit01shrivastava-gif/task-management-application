@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { usePrefersReducedMotion } from '../../hooks/useMotion';
+import { useMediaQuery } from '../../hooks/useMediaQuery';
 
 interface Props {
   name: string;
@@ -8,6 +9,9 @@ interface Props {
   label: string;
   base?: string;
   className?: string;
+  /** Optional dedicated portrait version for phones (≤ 860px). */
+  mobileName?: string;
+  mobileAspect?: string;
 }
 
 /**
@@ -15,7 +19,10 @@ interface Props {
  * plays while visible. Falls back to its poster (reduced motion, errors,
  * or browsers that refuse autoplay).
  */
-export function LoopVideo({ name, aspect, label, base = '/media/derived/clips/', className = '' }: Props) {
+export function LoopVideo({ name: deskName, aspect: deskAspect, label, base = '/media/derived/clips/', className = '', mobileName, mobileAspect }: Props) {
+  const narrow = useMediaQuery('(max-width: 860px)');
+  const name = narrow && mobileName ? mobileName : deskName;
+  const aspect = narrow && mobileName ? mobileAspect ?? deskAspect : deskAspect;
   const ref = useRef<HTMLVideoElement>(null);
   const wrap = useRef<HTMLDivElement>(null);
   const reduced = usePrefersReducedMotion();
@@ -46,6 +53,7 @@ export function LoopVideo({ name, aspect, label, base = '/media/derived/clips/',
         <img src={poster} alt={label} loading="lazy" />
       ) : (
         <video
+          key={name}
           ref={ref}
           muted
           loop

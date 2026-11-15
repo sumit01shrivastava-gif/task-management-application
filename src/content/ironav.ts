@@ -97,12 +97,26 @@ export const TECH = {
       n: '01',
       title: 'Visual navigation',
       body: 'IroNav is positioned as a visual navigation technology for uncrewed aircraft — a reference that does not rest on satellite positioning alone.',
+      video: {
+        desktop: 'vehicle-desktop',
+        mobile: 'vehicle-mobile',
+        label: 'Aerial footage of a truck on a highway bridge, with the IroNav-integrated aircraft and an illustrative tracking beam composited in',
+        caption: 'A moving ground vehicle kept in view from the air. The aircraft and beam are an illustrative composite.',
+        credit: { title: 'The Atchafalaya Basin Bridge And Whiskey Bay Pilot Channel Drone Video', author: 'Third Coast Drone', href: 'https://commons.wikimedia.org/wiki/File:The_Atchafalaya_Basin_Bridge_And_Whiskey_Bay_Pilot_Channel_Drone_Video.webm' },
+      },
     },
     {
       id: 'gnss',
       n: '02',
       title: 'GNSS interference protection',
       body: 'Alongside visual navigation, IroNav is presented by infiniDome as providing GNSS interference protection — relevant where satellite positioning may be disrupted or unavailable.',
+      video: {
+        desktop: 'building-desktop',
+        mobile: 'building-mobile',
+        label: 'Aerial footage exploring one lighthouse building from four viewpoints, with the IroNav-integrated aircraft composited in',
+        caption: 'One structure, observed from four viewpoints. The aircraft and beam are an illustrative composite.',
+        credit: { title: 'Cape Neddick Nubble Lighthouse - York, Maine 4k Drone flight - DJI Air2S', author: 'Dave Halter', href: 'https://commons.wikimedia.org/wiki/File:Cape_Neddick_Nubble_Lighthouse_-_York,_Maine_4k_Drone_flight_-_DJI_Air2S.webm' },
+      },
     },
     {
       id: 'uas',
@@ -110,8 +124,8 @@ export const TECH = {
       title: 'Uncrewed aircraft',
       body: 'Developed by infiniDome for uncrewed aircraft. Suitability for a specific airframe and mission is assessed case by case with Globaz Technologies.',
     },
-  ],
-  footnote: 'Diagrams are illustrative and do not describe IroNav’s internal operation. For technical detail, start with infiniDome’s published overview.',
+  ] as { id: string; n: string; title: string; body: string; video?: { desktop: string; mobile: string; label: string; caption: string; credit: { title: string; author: string; href: string } } }[],
+  footnote: 'Videos are illustrative composites of licensed third-party aerial footage with the IroNav product photograph and graphic overlays. They are not recordings of an IroNav demonstration, and the beam depicts a field of view, not an emitted laser. For technical detail, start with infiniDome’s published overview.',
 };
 
 export const INTEGRATION = {

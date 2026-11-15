@@ -1,5 +1,5 @@
 import gsap from 'gsap';
-import { CAMERA, GROUPS, SEQUENCE, type Mode } from './config';
+import { CAMERA, CLOSEUP, GROUPS, SEQUENCE, stageCentroid, type Mode } from './config';
 import type { ExplodeState } from './state';
 
 /**
@@ -49,7 +49,18 @@ export function buildTimeline(state: ExplodeState, mode: Mode, captions: HTMLEle
 
     if (stage.group && stage.layers.length) {
       const g = stage.group;
-      camTo(cam[stage.id], s);
+      const zoom = CLOSEUP[stage.id];
+      if (zoom) {
+        // frame the group as it detaches, then a close-up where it comes to rest
+        camTo(cam[stage.id], s, MOVE * 0.55);
+        const c = stageCentroid(stage.id, mode);
+        const base = cam[stage.id];
+        // close-up keeps some of the airframe in shot: blend towards the group's centre
+        const mix = mode === 'mobile' ? 0.45 : 0.6;
+        camTo({ x: base.x + (c.x - base.x) * mix, y: base.y + (c.y - base.y) * mix, z: base.z * zoom }, s + MOVE * 0.55, 0.38, 'power2.inOut');
+      } else {
+        camTo(cam[stage.id], s);
+      }
       // identify the group, then detach its layers one after another
       tl.to(state.hl, { [g]: 1, duration: 0.12, ease: 'power1.out' }, s);
       tl.to(state.lab, { [g]: 1, duration: 0.15 }, s + 0.05);

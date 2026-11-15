@@ -161,3 +161,24 @@ export const CAMERA: Record<Mode, Record<StageId, Cam>> = {
     reassemble: { x: IMG_W * 0.5, y: IMG_H * 0.52, z: 1.42 },
   },
 };
+
+/** Centre (image px) of a stage's layers in their exploded positions — target for the close-up. */
+export function stageCentroid(stage: StageId, mode: Mode) {
+  const seq = SEQUENCE.find((s) => s.id === stage);
+  const f = EXPLODE_FACTOR[mode];
+  const ls = manifest.layers.filter((l) => seq?.layers.includes(l.id));
+  if (!ls.length) return { x: IMG_W / 2, y: IMG_H / 2 };
+  const x = ls.reduce((a, l) => a + l.x + l.w / 2 + l.explode[0] * f.x, 0) / ls.length;
+  const y = ls.reduce((a, l) => a + l.y + l.h / 2 + l.explode[1] * f.y, 0) / ls.length;
+  return { x, y };
+}
+
+/** How far each stage's close-up pushes in, relative to the stage's camera zoom. */
+export const CLOSEUP: Partial<Record<StageId, number>> = {
+  propellers: 1.22,
+  motors: 1.42,
+  arms: 1.38,
+  gear: 1.3,
+  electronics: 1.55,
+  cables: 1.3,
+};
