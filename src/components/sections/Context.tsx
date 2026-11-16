@@ -40,6 +40,7 @@ export function Context() {
     const trail = root.querySelector<SVGPathElement>('.cx-trail')!;
     const len = track.getTotalLength();
     trail.style.strokeDasharray = `${len}`;
+    const lift = root.querySelector<SVGGElement>('.cx-lift')!;
     const st = { t: 0, prot: 1, jam: 0, vis: 0 };
 
     const draw = () => {
@@ -47,6 +48,9 @@ export function Context() {
       const q = track.getPointAtLength(Math.min(len, len * (0.1 + st.t * 0.55) + 30));
       const ang = (Math.atan2(q.y - p.y, q.x - p.x) * 180) / Math.PI + 90;
       craft.setAttribute('transform', `translate(${p.x.toFixed(1)} ${p.y.toFixed(1)})`);
+      // keep the (scaled) aircraft fully inside the frame near the top of the plate
+      const ps = parseFloat(getComputedStyle(root).getPropertyValue('--plane-s')) || 1;
+      lift.setAttribute('transform', `translate(0 ${(-Math.min(230, p.y - 96 * ps - 12)).toFixed(1)})`);
       trail.style.strokeDashoffset = `${len - len * (0.1 + st.t * 0.55)}`;
       links.forEach((l, i) => {
         l.setAttribute('x2', p.x.toFixed(1));
@@ -93,6 +97,8 @@ export function Context() {
         scrub: 0.8,
         animation: tl,
         invalidateOnRefresh: true,
+        // measured after the Architecture pin above it, which is rebuilt when the layout mode settles
+        refreshPriority: -1,
         onUpdate: (self) => {
           const i = self.progress < 0.33 ? 0 : self.progress < 0.64 ? 1 : 2;
           setActive((v) => (v === i ? v : i));
@@ -141,7 +147,7 @@ export function Context() {
             <ellipse className="cx-shadow" rx="120" ry="34" />
             <line className="cx-alt" x1="0" y1="0" x2="0" y2="-150" />
             {/* the IroNav-integrated aircraft (original product photograph) at altitude */}
-            <g transform="translate(0 -230)"><g className="cx-plane">
+            <g className="cx-lift" transform="translate(0 -230)"><g className="cx-plane">
               <circle className="cx-null" r="190" />
               <circle className="cx-null cx-null--2" r="250" />
               <image href="/media/derived/hero-800.webp" x="-200" y="-96" width="400" height="192" />

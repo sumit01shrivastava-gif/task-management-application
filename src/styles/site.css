@@ -221,6 +221,7 @@ ol, ul { padding: 0; list-style: none; }
   /* phones: the complete aerial plate at full width (16:9, no crop), narrative below */
   .ctx__sticky { display: flex; flex-direction: column; justify-content: center; padding-top: var(--bar); background: var(--night); }
   .ctx__svg { --plane-s: 1.8; }
+  .cx-plane { transform-origin: 50% 50%; }
   .ctx__media { position: relative; inset: auto; flex: none; width: 100%; aspect-ratio: 16 / 9; }
   .ctx__media img { object-fit: contain; }
   .ctx__shade { display: none; }

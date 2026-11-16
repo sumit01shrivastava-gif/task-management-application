@@ -134,6 +134,9 @@ export function Anatomy() {
         },
       });
     }, el);
+    // the pin changes the page length: re-measure every trigger below it
+    ScrollTrigger.sort();
+    ScrollTrigger.refresh();
     return () => {
       stRef.current = null;
       tlRef.current = null;

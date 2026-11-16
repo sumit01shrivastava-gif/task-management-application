@@ -273,6 +273,38 @@ def compose(shots, mode, name, out_size, with_drone, crf=23, vp9crf=34):
     PW = int(246 * K)  # label plate width
     if with_drone:
         sprite0, sh0, origin0 = ironav_sprite(300 if mode == 'desktop' else 240)
+    ph = int(52 * K)
+
+    def label_cands(L, T, R, B, pw, ph):
+        return [(R + 12, T - 4), (L - pw - 14, T - 4), (L, B + 12), (L, T - ph - 16), (R + 12, B - ph), (L - pw - 14, B - ph)]
+
+    def drone_rect(k):
+        if not with_drone:
+            return None
+        x, y = W * shots[k]['drone'][0] - sprite0.width / 2, H * shots[k]['drone'][1] - sprite0.height / 2
+        return (x - 14, y - 14, x + sprite0.width + 14, y + sprite0.height + 14)
+
+    def place_label(k, d):
+        """One label placement per shot, chosen so that over the whole shot the plate stays
+        inside the frame and never covers the composited aircraft."""
+        sh = shots[k]
+        pw = int(max(PW, d.textlength(sh['label'], font=f_lab), d.textlength(sh['sub'], font=f_small)) + 10)
+        dr = drone_rect(k)
+
+        def ok(c):
+            x, y = c
+            if not (22 <= x and x + pw <= W - 14 and 14 <= y and y + ph <= H - int(70 * K)):
+                return False
+            return dr is None or x + pw < dr[0] or x - 8 > dr[2] or y + ph < dr[1] or y - 6 > dr[3]
+
+        for ci in range(6):
+            if all(ok(label_cands(*b, pw, ph)[ci]) for b in sh['boxes']):
+                return ci, pw, ph
+        # fall back to the candidate valid for most frames
+        best = max(range(6), key=lambda ci: sum(ok(label_cands(*b, pw, ph)[ci]) for b in sh['boxes']))
+        return best, pw, ph
+
+    placement = {}
     # timeline: shot k occupies [start_k, start_k + n_k); consecutive shots overlap by XF
     starts, t = [], 0
     for k, sh in enumerate(shots):
@@ -341,10 +373,13 @@ def compose(shots, mode, name, out_size, with_drone, crf=23, vp9crf=34):
                 for (x1, y1, ddx, ddy) in [(L, T, 1, 1), (R, T, -1, 1), (L, B, 1, -1), (R, B, -1, -1)]:
                     d.line([(x1, y1), (x1 + c * ddx, y1)], fill=col, width=2)
                     d.line([(x1, y1), (x1, y1 + c * ddy)], fill=col, width=2)
-                lx = R + 12 if R + PW + 14 < W else L - PW - 14
-                lx = max(14, min(W - PW - 14, lx))
-                ly = max(14, min(H - int(80 * K), T - 4))
-                d.rectangle([lx - 8, ly - 6, lx + PW, ly + int(52 * K)], fill=(3, 15, 53, int(170 * w)))
+                if k not in placement:
+                    placement[k] = place_label(k, d)
+                ci, pw, ph = placement[k]
+                lx, ly = label_cands(L, T, R, B, pw, ph)[ci]
+                lx = max(14, min(W - pw - 14, lx))
+                ly = max(14, min(H - int(80 * K), ly))
+                d.rectangle([lx - 8, ly - 6, lx + pw, ly + ph], fill=(3, 15, 53, int(170 * w)))
                 d.text((lx, ly), shots[k]['label'], font=f_lab, fill=INK + (int(240 * w),))
                 d.text((lx, ly + int(28 * K)), shots[k]['sub'], font=f_small, fill=AMBER + (int(235 * w),))
             m = 26
