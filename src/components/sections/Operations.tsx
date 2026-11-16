@@ -27,7 +27,7 @@ export function Operations() {
       {OPERATIONS.films.map((f, i) => (
         <figure className={`wrap film ${i % 2 ? 'film--flip' : ''} reveal`} key={f.id}>
           <div className="film__frame">
-            <LoopVideo base="/media/footage/" name={`${f.id}-desktop`} mobileName={`${f.id}-mobile`} aspect="16 / 9" mobileAspect="16 / 9" label={f.label} />
+            <LoopVideo base="/media/footage/" name={`${f.id}-desktop`} mobileName={`${f.id}-sm`} aspect="16 / 9" mobileAspect="16 / 9" label={f.label} />
           </div>
           <figcaption className="film__cap">
             <div>

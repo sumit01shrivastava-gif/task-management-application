@@ -21,7 +21,8 @@ interface Props {
  */
 export function LoopVideo({ name: deskName, aspect: deskAspect, label, base = '/media/derived/clips/', className = '', mobileName, mobileAspect }: Props) {
   const narrow = useMediaQuery('(max-width: 860px)');
-  const name = narrow && mobileName ? mobileName : deskName;
+  const small = narrow && !!mobileName;
+  const name = small ? mobileName! : deskName;
   const aspect = narrow && mobileName ? mobileAspect ?? deskAspect : deskAspect;
   const ref = useRef<HTMLVideoElement>(null);
   const wrap = useRef<HTMLDivElement>(null);
@@ -65,7 +66,7 @@ export function LoopVideo({ name: deskName, aspect: deskAspect, label, base = '/
           disablePictureInPicture
         >
           {near && <source src={`${base}${name}.mp4`} type="video/mp4" />}
-          {near && <source src={`${base}${name}.webm`} type="video/webm" onError={() => setFailed(true)} />}
+          {near && !small && <source src={`${base}${name}.webm`} type="video/webm" onError={() => setFailed(true)} />}
         </video>
       )}
     </div>

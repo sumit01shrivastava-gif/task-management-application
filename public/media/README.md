@@ -24,8 +24,8 @@ the midpoint of each cut. **Not recordings of an IroNav demonstration.**
 
 | File | Source | Author | Licence |
 | ---- | ------ | ------ | ------- |
-| `vehicle-{desktop,mobile}.*` | [The Atchafalaya Basin Bridge And Whiskey Bay Pilot Channel Drone Video](https://commons.wikimedia.org/wiki/File:The_Atchafalaya_Basin_Bridge_And_Whiskey_Bay_Pilot_Channel_Drone_Video.webm) | Third Coast Drone | [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) |
-| `installation-{desktop,mobile}.*` | [Sondermunitionslager Dülmen-Visbeck](https://commons.wikimedia.org/wiki/File:Sondermunitionslager_D%C3%BClmen-Visbeck.webm) (former Bundeswehr special ammunition storage site, filmed July 2024) | Dietmar Rabich | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) — the adapted film is shared under the same licence |
+| `vehicle-{desktop,sm}.*` | [The Atchafalaya Basin Bridge And Whiskey Bay Pilot Channel Drone Video](https://commons.wikimedia.org/wiki/File:The_Atchafalaya_Basin_Bridge_And_Whiskey_Bay_Pilot_Channel_Drone_Video.webm) | Third Coast Drone | [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) |
+| `installation-{desktop,sm}.*` | [Sondermunitionslager Dülmen-Visbeck](https://commons.wikimedia.org/wiki/File:Sondermunitionslager_D%C3%BClmen-Visbeck.webm) (former Bundeswehr special ammunition storage site, filmed July 2024) | Dietmar Rabich | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) — the adapted film is shared under the same licence |
 | `../derived/context-plate*.webp` | Still frame from the Dülmen-Visbeck film (operational-context scene) | Dietmar Rabich | CC BY-SA 4.0 |
 
 The truck film composites the original IroNav photograph, colour-matched to each shot, with

@@ -18,6 +18,9 @@ template matching / optical flow; nothing is generated.
 
 Usage: python3 scripts/build_footage.py <dir-with-source-webms> [vehicle] [building]
 Output: public/media/footage/{vehicle,installation}-{desktop,mobile}.{mp4,webm} + posters
+Phone files (-sm): the -mobile render re-encoded lighter for phones, then the -mobile files removed:
+  ffmpeg -i NAME-mobile.mp4 -vf fps=24 -c:v libx264 -profile:v main -level 3.1 -preset slow -crf 27/28
+         -maxrate 1200k/950k -bufsize 2x -g 48 -pix_fmt yuv420p -movflags +faststart -an NAME-sm.mp4
 """
 import os, subprocess, sys, json, math
 import numpy as np
