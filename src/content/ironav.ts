@@ -168,9 +168,9 @@ export const OPERATIONS = {
       k: 'Infrastructure and perimeter',
       title: 'One installation, six viewpoints.',
       body: 'A former military storage installation observed from the air — perimeter, watchtower, hardened shelters and bunkers.',
-      label: 'Licensed aerial footage of a former military ammunition storage installation from six viewpoints',
-      disclaimer: 'Illustrative footage. Not a recorded IroNav demonstration.',
-      credit: { title: 'Sondermunitionslager Dülmen-Visbeck', author: 'Dietmar Rabich', href: 'https://commons.wikimedia.org/wiki/File:Sondermunitionslager_D%C3%BClmen-Visbeck.webm', licence: 'CC BY-SA 4.0', licenceHref: 'https://creativecommons.org/licenses/by-sa/4.0/', changes: 'Trimmed, reframed, graded and annotated; this adaptation is shared under CC BY-SA 4.0.' },
+      label: 'Licensed aerial footage of a former military ammunition storage installation from six viewpoints, composited with the IroNav-integrated aircraft',
+      disclaimer: 'Illustrative composite. Not a recorded IroNav demonstration; the beam depicts a field of view, not an emitted laser.',
+      credit: { title: 'Sondermunitionslager Dülmen-Visbeck', author: 'Dietmar Rabich', href: 'https://commons.wikimedia.org/wiki/File:Sondermunitionslager_D%C3%BClmen-Visbeck.webm', licence: 'CC BY-SA 4.0', licenceHref: 'https://creativecommons.org/licenses/by-sa/4.0/', changes: 'Trimmed, reframed, graded, annotated and composited; this adaptation is shared under CC BY-SA 4.0.' },
     },
   ],
 };
