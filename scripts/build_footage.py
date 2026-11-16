@@ -264,10 +264,12 @@ def compose(shots, mode, name, out_size, with_drone, crf=23, vp9crf=34):
     The composited aircraft is one continuous layer that glides between shot positions
     during each crossfade, so cuts never make it jump or double."""
     W, H = out_size
-    f_lab = font(22 if mode == 'desktop' else 24)
-    f_small = font(17 if mode == 'desktop' else 19)
+    K = 1.0 if mode == 'desktop' else 1.45  # overlay scale: mobile type must stay legible on a phone
+    f_lab = font(int(22 * K))
+    f_small = font(int(17 * K))
+    PW = int(246 * K)  # label plate width
     if with_drone:
-        sprite0, sh0, origin0 = ironav_sprite(300 if mode == 'desktop' else 280)
+        sprite0, sh0, origin0 = ironav_sprite(300 if mode == 'desktop' else 240)
     # timeline: shot k occupies [start_k, start_k + n_k); consecutive shots overlap by XF
     starts, t = [], 0
     for k, sh in enumerate(shots):
@@ -336,21 +338,21 @@ def compose(shots, mode, name, out_size, with_drone, crf=23, vp9crf=34):
                 for (x1, y1, ddx, ddy) in [(L, T, 1, 1), (R, T, -1, 1), (L, B, 1, -1), (R, B, -1, -1)]:
                     d.line([(x1, y1), (x1 + c * ddx, y1)], fill=col, width=2)
                     d.line([(x1, y1), (x1, y1 + c * ddy)], fill=col, width=2)
-                lx = R + 12 if R + 260 < W else L - 260
-                lx = max(14, min(W - 260, lx))
-                ly = max(14, min(H - 80, T - 4))
-                d.rectangle([lx - 8, ly - 6, lx + 246, ly + 52], fill=(3, 15, 53, int(170 * w)))
+                lx = R + 12 if R + PW + 14 < W else L - PW - 14
+                lx = max(14, min(W - PW - 14, lx))
+                ly = max(14, min(H - int(80 * K), T - 4))
+                d.rectangle([lx - 8, ly - 6, lx + PW, ly + int(52 * K)], fill=(3, 15, 53, int(170 * w)))
                 d.text((lx, ly), shots[k]['label'], font=f_lab, fill=INK + (int(240 * w),))
-                d.text((lx, ly + 28), shots[k]['sub'], font=f_small, fill=AMBER + (int(235 * w),))
+                d.text((lx, ly + int(28 * K)), shots[k]['sub'], font=f_small, fill=AMBER + (int(235 * w),))
             m = 26
-            d.text((m, H - m - 20), 'ILLUSTRATIVE COMPOSITE · NOT A PRODUCT DEMONSTRATION' if with_drone else 'ILLUSTRATIVE · LICENSED AERIAL FOOTAGE', font=f_small, fill=INK + (170,))
+            d.text((m, H - m - int(20 * K)), 'ILLUSTRATIVE COMPOSITE · NOT A PRODUCT DEMONSTRATION', font=f_small, fill=INK + (170,))
             yield np.asarray(im.convert('RGB'))
     write_video(gen(), out_size, name, total, crf=crf, vp9crf=vp9crf)
 
 
 def vehicle(src_dir, mode):
     src = os.path.join(src_dir, 'atch1080.webm')
-    out_size = (1280, 720) if mode == 'desktop' else (720, 960)
+    out_size = (1280, 720) if mode == 'desktop' else (960, 540)
     W, H = out_size
     shots = []
     for si, shot in enumerate(VEHICLE_SHOTS):
@@ -365,19 +367,19 @@ def vehicle(src_dir, mode):
             cx, cy = cen[i]
             vx = cen[min(n - 1, i + 6)][0] - cen[max(0, i - 6)][0]
             vy = cen[min(n - 1, i + 6)][1] - cen[max(0, i - 6)][1]
-            lead = 1.5 if mode == 'desktop' else 0.4
-            view, (x0, y0, s) = crop_view(grade(fr[i]), cx + vx * lead, cy + vy * lead * 0.6, 1920 / z if mode == 'desktop' else 1080 * 0.75 / z, out_size)
+            lead = 1.5
+            view, (x0, y0, s) = crop_view(grade(fr[i]), cx + vx * lead, cy + vy * lead * 0.6, 1920 / z, out_size)
             plates.append(view)
             bx, by, bw, bh = boxes[i]
             obox.append(((bx - x0) * s - 8, (by - y0) * s - 8, (bx + bw - x0) * s + 8, (by + bh - y0) * s + 8))
-        drone = (0.5, 0.13) if mode == 'mobile' else shot['drone']
+        drone = shot['drone']
         shots.append(dict(plates=plates, boxes=obox, label='GROUND VEHICLE', sub=f'IN VIEW · {shot["label"]}', drone=drone, haze=plate_color(plates[0])))
     compose(shots, mode, f'vehicle-{mode}', out_size, True)
 
 
 def installation(src_dir, mode, shot_list):
     src = os.path.join(src_dir, 'depot1080.webm')
-    out_size = (1280, 720) if mode == 'desktop' else (720, 960)
+    out_size = (1280, 720) if mode == 'desktop' else (960, 540)
     shots = []
     for sh in shot_list:
         fr = read_frames(src, sh['t0'], sh['t1'] + XF / FPS * 0.5)
@@ -389,7 +391,7 @@ def installation(src_dir, mode, shot_list):
             z = sh['z'][0] + (sh['z'][1] - sh['z'][0]) * t
             bx, by, bw, bh = boxes[i]
             cx, cy = bx + bw / 2, by + bh / 2
-            if mode == 'desktop':
+            if True:  # same full composition on every device
                 cx = cx * 0.35 + fr.shape[2] / 2 * 0.65
                 cy = cy * 0.35 + fr.shape[1] / 2 * 0.65
                 cw = fr.shape[2] / z
@@ -398,8 +400,11 @@ def installation(src_dir, mode, shot_list):
             view, (x0, y0, s) = crop_view(grade(fr[i]), cx, cy, cw, out_size)
             plates.append(view)
             obox.append(((bx - x0) * s - 8, (by - y0) * s - 8, (bx + bw - x0) * s + 8, (by + bh - y0) * s + 8))
-        shots.append(dict(plates=plates, boxes=obox, label=sh['label'], sub=sh['sub']))
-    compose(shots, mode, f'installation-{mode}', out_size, False, crf=26, vp9crf=38)
+        # aircraft composite takes the upper corner opposite the structure, so it never covers it
+        L, T, R, B = obox[len(obox) // 2]
+        drone = (0.2, 0.17) if (L + R) / 2 > out_size[0] / 2 else (0.8, 0.17)
+        shots.append(dict(plates=plates, boxes=obox, label=sh['label'], sub=sh['sub'], drone=drone, haze=plate_color(plates[0])))
+    compose(shots, mode, f'installation-{mode}', out_size, True, crf=27, vp9crf=44)
 
 
 def debug_track(src_dir, name, t0, t1, box, out):

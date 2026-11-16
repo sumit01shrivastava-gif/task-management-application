@@ -149,7 +149,7 @@ export const CAMERA: Record<Mode, Record<StageId, Cam>> = {
     reassemble: { x: IMG_W * 0.5, y: IMG_H * 0.5, z: 1 },
   },
   mobile: {
-    original: { x: IMG_W * 0.5, y: IMG_H * 0.52, z: 1.42 },
+    original: { x: IMG_W * 0.5, y: IMG_H * 0.5, z: 1.0 },
     // while parts separate, frame the whole airframe with margin so nothing clips
     propellers: { x: IMG_W * 0.5, y: IMG_H * 0.48, z: 0.88 },
     motors: { x: IMG_W * 0.5, y: IMG_H * 0.5, z: 0.88 },
@@ -159,7 +159,7 @@ export const CAMERA: Record<Mode, Record<StageId, Cam>> = {
     cables: { x: IMG_W * 0.5, y: IMG_H * 0.52, z: 0.88 },
     ironav: { x: IMG_W * 0.5, y: IMG_H * 0.42, z: 1.12 },
     exploded: { x: IMG_W * 0.5, y: IMG_H * 0.52, z: 0.86 },
-    reassemble: { x: IMG_W * 0.5, y: IMG_H * 0.52, z: 1.42 },
+    reassemble: { x: IMG_W * 0.5, y: IMG_H * 0.5, z: 1.0 },
   },
 };
 

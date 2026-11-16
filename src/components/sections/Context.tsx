@@ -43,14 +43,14 @@ export function Context() {
     const st = { t: 0, prot: 1, jam: 0, vis: 0 };
 
     const draw = () => {
-      const p = track.getPointAtLength(len * (0.08 + st.t * 0.84));
-      const q = track.getPointAtLength(Math.min(len, len * (0.08 + st.t * 0.84) + 30));
+      const p = track.getPointAtLength(len * (0.1 + st.t * 0.55));
+      const q = track.getPointAtLength(Math.min(len, len * (0.1 + st.t * 0.55) + 30));
       const ang = (Math.atan2(q.y - p.y, q.x - p.x) * 180) / Math.PI + 90;
-      craft.setAttribute('transform', `translate(${p.x.toFixed(1)} ${p.y.toFixed(1)}) rotate(${ang.toFixed(1)})`);
-      trail.style.strokeDashoffset = `${len - len * (0.08 + st.t * 0.84)}`;
+      craft.setAttribute('transform', `translate(${p.x.toFixed(1)} ${p.y.toFixed(1)})`);
+      trail.style.strokeDashoffset = `${len - len * (0.1 + st.t * 0.55)}`;
       links.forEach((l, i) => {
         l.setAttribute('x2', p.x.toFixed(1));
-        l.setAttribute('y2', (p.y - 20).toFixed(1));
+        l.setAttribute('y2', (p.y - 280).toFixed(1));
         l.style.opacity = String(Math.max(0.12, st.prot * (1 - st.jam * 0.85)) * (i === 1 ? 1 : 0.85));
         l.classList.toggle('is-cut', st.jam > 0.5);
       });
@@ -136,15 +136,17 @@ export function Context() {
               <path d="M-30 0h-14M30 0h14M0 -30v-14M0 30v14" />
             </g>
           ))}
-          <g className="cx-craft"><g transform="scale(1.6)">
-            <circle className="cx-null" r="58" />
-            <circle className="cx-null cx-null--2" r="86" />
-            <path d="M-24 -24 L24 24 M24 -24 L-24 24" />
-            {[[-24, -24], [24, -24], [-24, 24], [24, 24]].map(([x, y], i) => (
-              <circle key={i} cx={x} cy={y} r="11" />
-            ))}
-            <rect x="-8" y="-8" width="16" height="16" />
-          </g></g>
+          <g className="cx-craft">
+            {/* ground position: soft shadow of the aircraft on the terrain */}
+            <ellipse className="cx-shadow" rx="120" ry="34" />
+            <line className="cx-alt" x1="0" y1="0" x2="0" y2="-150" />
+            {/* the IroNav-integrated aircraft (original product photograph) at altitude */}
+            <g transform="translate(0 -230)"><g className="cx-plane">
+              <circle className="cx-null" r="190" />
+              <circle className="cx-null cx-null--2" r="250" />
+              <image href="/media/derived/hero-800.webp" x="-200" y="-96" width="400" height="192" />
+            </g></g>
+          </g>
         </svg>
         <div className="ctx__shade" />
       </div>

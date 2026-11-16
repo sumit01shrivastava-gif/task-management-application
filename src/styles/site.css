@@ -155,8 +155,8 @@ ol, ul { padding: 0; list-style: none; }
   .hero { min-height: auto; padding-top: calc(var(--bar) + 28px); }
   .hero__grid { grid-template-columns: 1fr; }
   .hero__h { font-size: clamp(34px, 10.4vw, 52px); }
-  .hero__product { order: -1; width: 128vw; margin: 0 0 0 -14vw; }
-  .hero__product figcaption { text-align: center; padding-inline: 14vw; }
+  .hero__product { order: -1; width: 100%; margin: 0; } /* complete aircraft, no edge bleed */
+  .hero__product figcaption { text-align: center; }
   .hero__cue { display: none; }
 }
 
@@ -200,9 +200,10 @@ ol, ul { padding: 0; list-style: none; }
 .cx-foot { fill: rgba(143, 176, 255, 0.22); stroke: #8fb0ff; stroke-width: 3; }
 .cx-feat rect { fill: rgba(242, 169, 59, 0.12); stroke: var(--amber); stroke-width: 4; }
 .cx-feat path { stroke: var(--amber); stroke-width: 3; }
-.cx-craft path { stroke: #fff; stroke-width: 5; }
-.cx-craft circle { fill: rgba(3, 15, 53, 0.7); stroke: #fff; stroke-width: 2.5; }
-.cx-craft rect { fill: var(--amber); }
+.cx-plane { transform: scale(var(--plane-s, 1)); transform-box: fill-box; transform-origin: 50% 100%; }
+.cx-craft image { filter: drop-shadow(0 18px 18px rgba(0, 0, 0, 0.55)); }
+.cx-shadow { fill: rgba(0, 0, 0, 0.45); filter: blur(10px); }
+.cx-alt { stroke: rgba(255, 255, 255, 0.5); stroke-width: 2; stroke-dasharray: 4 8; }
 .cx-craft .cx-null { fill: none; stroke: #8fb0ff; stroke-width: 2; stroke-dasharray: 4 9; opacity: var(--prot); }
 .cx-craft .cx-null--2 { stroke-opacity: 0.5; }
 .ctx__panel { position: relative; height: 100%; display: flex; flex-direction: column; justify-content: center; padding-top: var(--bar); }
@@ -217,21 +218,22 @@ ol, ul { padding: 0; list-style: none; }
 .ctx .h-section { font-size: clamp(26px, 2.5vw, 42px); }
 .ctx__states p { font-size: 13.5px; }
 @media (max-width: 860px) {
-  /* phones: the scene takes the upper 60%, the narrative sits beneath it on navy */
-  .ctx__media { bottom: 40%; }
-  .ctx__shade { background: linear-gradient(0deg, var(--night) 0%, rgba(3, 15, 53, 0) 22%); }
-  .ctx__sticky { background: var(--night); }
+  /* phones: the complete aerial plate at full width (16:9, no crop), narrative below */
+  .ctx__sticky { display: flex; flex-direction: column; justify-content: center; padding-top: var(--bar); background: var(--night); }
+  .ctx__svg { --plane-s: 1.8; }
+  .ctx__media { position: relative; inset: auto; flex: none; width: 100%; aspect-ratio: 16 / 9; }
+  .ctx__media img { object-fit: contain; }
+  .ctx__shade { display: none; }
+  .ctx__panel { height: auto; flex: none; justify-content: flex-start; padding-top: 22px; padding-bottom: 20px; }
   .ctx__note { position: static; margin-top: 14px; max-width: none; text-align: left; font-size: 9px; }
   .ctx .h-section { font-size: 22px; }
   .ctx__panel .chapter { margin-bottom: 10px; }
-  .ctx__panel { justify-content: flex-end; padding-bottom: 46px; }
   .ctx__panel .lede { display: none; }
   .ctx__states { margin-top: 18px; }
   /* one state at a time, crossfaded in a single grid cell: no reflow while scrolling */
   .ctx__states { display: grid; }
   .ctx__states li { grid-area: 1 / 1; padding: 8px 0 8px 14px; opacity: 0; }
   .ctx__states li.is-active { opacity: 1; }
-  .ctx__media img { object-position: 50% 50%; } /* must match the overlay's xMidYMid slice */
 }
 
 /* ── 03 Product ───────────────────────────────────────────────────────── */
@@ -590,8 +592,8 @@ ol, ul { padding: 0; list-style: none; }
 .film { margin: clamp(70px, 8vw, 120px) 0 0; }
 .film__frame { width: 100%; }
 .loop { position: relative; width: 100%; overflow: hidden; background: #000; }
-.loop video, .loop img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.film__frame .loop { max-height: 88vh; }
+.loop video, .loop img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; } /* full frame, never cropped */
+.film__frame { max-width: calc(86vh * 16 / 9); margin-inline: auto; } /* whole frame fits the viewport height */
 .film__cap { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 5fr) minmax(0, 4fr); gap: 20px 40px; padding-top: 22px; padding-bottom: 8px; align-items: start; }
 .film__cap b { display: block; margin-top: 6px; font-size: clamp(18px, 1.6vw, 24px); font-weight: 600; text-transform: uppercase; letter-spacing: -0.005em; }
 .film__cap > p { color: var(--ink-2); font-size: 15px; }

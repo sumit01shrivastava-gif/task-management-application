@@ -22,7 +22,7 @@ export const NAV = [
   { id: 'globaz', n: '01', label: 'Globaz' },
   { id: 'context', n: '02', label: 'Context' },
   { id: 'product', n: '03', label: 'Product' },
-  { id: 'architecture', n: '04', label: 'Architecture' },
+  { id: 'anatomy', n: '04', label: 'Architecture' },
   { id: 'operations', n: '05', label: 'Operations' },
   { id: 'integration', n: '06', label: 'Integration' },
 ] as const;
