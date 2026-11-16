@@ -31,7 +31,7 @@ export function Hero() {
           <figcaption className="label">{HERO.figure}</figcaption>
         </figure>
       </div>
-      <a className="hero__cue label" href="#globaz">
+      <a className="hero__cue label" href="#anatomy">
         Scroll <i aria-hidden />
       </a>
     </section>

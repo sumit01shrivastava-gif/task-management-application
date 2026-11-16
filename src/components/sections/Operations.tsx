@@ -24,12 +24,12 @@ export function Operations() {
         </ol>
       </div>
 
-      {OPERATIONS.films.map((f) => (
-        <figure className="film" key={f.id}>
+      {OPERATIONS.films.map((f, i) => (
+        <figure className={`wrap film ${i % 2 ? 'film--flip' : ''} reveal`} key={f.id}>
           <div className="film__frame">
             <LoopVideo base="/media/footage/" name={`${f.id}-desktop`} mobileName={`${f.id}-mobile`} aspect="16 / 9" mobileAspect="16 / 9" label={f.label} />
           </div>
-          <figcaption className="wrap film__cap">
+          <figcaption className="film__cap">
             <div>
               <span className="label">{f.k}</span>
               <b>{f.title}</b>

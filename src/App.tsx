@@ -34,12 +34,12 @@ export default function App() {
       <TopBar />
       <main id="main">
         <Hero />
-        <Globaz />
+        <Anatomy />
         <Context />
         <Product />
-        <Anatomy />
         <Operations />
         <Integration />
+        <Globaz />
       </main>
       <Footer />
     </>

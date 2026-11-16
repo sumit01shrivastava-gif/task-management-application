@@ -19,12 +19,12 @@ export const LINKS = {
 } as const;
 
 export const NAV = [
-  { id: 'globaz', n: '01', label: 'Globaz' },
+  { id: 'anatomy', n: '01', label: 'Architecture' },
   { id: 'context', n: '02', label: 'Context' },
   { id: 'product', n: '03', label: 'Product' },
-  { id: 'anatomy', n: '04', label: 'Architecture' },
-  { id: 'operations', n: '05', label: 'Operations' },
-  { id: 'integration', n: '06', label: 'Integration' },
+  { id: 'operations', n: '04', label: 'Operations' },
+  { id: 'integration', n: '05', label: 'Integration' },
+  { id: 'globaz', n: '06', label: 'Globaz' },
 ] as const;
 
 export const HERO = {
@@ -40,7 +40,7 @@ export const HERO = {
 };
 
 export const GLOBAZ = {
-  index: '01',
+  index: '06',
   label: 'Globaz Technologies',
   // [G] About: "an Indian defence and aerospace systems integrator ... build, integrate and field mission-ready systems"
   headline: 'An Indian defence and aerospace systems integrator.',
@@ -124,7 +124,7 @@ export const PRODUCT = {
 };
 
 export const ANATOMY = {
-  index: '04',
+  index: '01',
   label: 'Platform architecture',
   stages: [
     { id: 'original', kicker: 'Integrated platform', title: 'A complete airframe.', body: 'IroNav mounts beneath the central assembly of a coaxial multirotor platform.' },
@@ -142,7 +142,7 @@ export const ANATOMY = {
 };
 
 export const OPERATIONS = {
-  index: '05',
+  index: '04',
   label: 'Operational applications',
   headline: 'Where navigation resilience matters.',
   // [GP] use cases, as published
@@ -176,7 +176,7 @@ export const OPERATIONS = {
 };
 
 export const INTEGRATION = {
-  index: '06',
+  index: '05',
   label: 'Integration in India',
   headline: 'From platform assessment to lifecycle support.',
   intro: 'Platform fit is assessed against each customer’s aircraft configuration and mission requirement.',

@@ -582,25 +582,26 @@ ol, ul { padding: 0; list-style: none; }
 .cap__k b { color: var(--amber); font-weight: 500; }
 
 /* ── 05 Operations ────────────────────────────────────────────────────── */
-.ops { padding: clamp(90px, 11vw, 170px) 0 0; background: var(--night); }
+.ops { padding: clamp(90px, 11vw, 170px) 0; background: var(--night); }
 .ops__uses { margin-top: 40px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border-top: 1px solid var(--hair-2); }
 .ops__uses li { padding: 22px 20px 26px 0; }
 .ops__uses li + li { padding-left: 20px; border-left: 1px solid var(--hair); }
 .ops__n { font-family: var(--mono); font-size: 11px; color: var(--amber); }
 .ops__uses b { display: block; margin-top: 10px; font-size: 16px; font-weight: 600; line-height: 1.3; }
 .ops__uses p { margin-top: 8px; font-size: 13.5px; color: var(--ink-2); }
-.film { margin: clamp(70px, 8vw, 120px) 0 0; }
-.film__frame { width: 100%; }
+.film { margin-top: clamp(64px, 7vw, 110px); display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: clamp(24px, 4vw, 64px); align-items: center; }
+.film--flip { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); }
+.film--flip .film__frame { order: 2; }
+.film__frame { width: 100%; border: 1px solid var(--hair); }
 .loop { position: relative; width: 100%; overflow: hidden; background: #000; }
 .loop video, .loop img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; } /* full frame, never cropped */
-.film__frame { max-width: calc(86vh * 16 / 9); margin-inline: auto; } /* whole frame fits the viewport height */
-.film__cap { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 5fr) minmax(0, 4fr); gap: 20px 40px; padding-top: 22px; padding-bottom: 8px; align-items: start; }
+.film__cap { display: grid; gap: 16px; align-content: center; }
 .film__cap b { display: block; margin-top: 6px; font-size: clamp(18px, 1.6vw, 24px); font-weight: 600; text-transform: uppercase; letter-spacing: -0.005em; }
 .film__cap > p { color: var(--ink-2); font-size: 15px; }
 .film__fine { font-size: 11.5px !important; line-height: 1.6; color: var(--ink-3) !important; }
 .film__fine a { text-decoration: underline; text-underline-offset: 2px; }
 @media (max-width: 1100px) { .ops__uses { grid-template-columns: repeat(2, minmax(0, 1fr)); } .ops__uses li { padding-left: 0 !important; border-left: 0 !important; border-bottom: 1px solid var(--hair); padding-right: 16px; } }
-@media (max-width: 860px) { .film__cap { grid-template-columns: 1fr; } }
+@media (max-width: 860px) { .film, .film--flip { grid-template-columns: 1fr; } .film--flip .film__frame { order: 0; } }
 @media (max-width: 560px) { .ops__uses { grid-template-columns: 1fr; } }
 
 /* ── 06 Integration ───────────────────────────────────────────────────── */
