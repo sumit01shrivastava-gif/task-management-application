@@ -29,7 +29,9 @@ export function LoopVideo({ name: deskName, aspect: deskAspect, label, base = '/
   const reduced = usePrefersReducedMotion();
   const [near, setNear] = useState(false);
   const [failed, setFailed] = useState(false);
-  const poster = `${base}${name}-poster.webp`;
+  // bump when a film is re-rendered, so browsers never replay a stale saved copy
+  const v = '?v=3';
+  const poster = `${base}${name}-poster.webp${v}`;
 
   useEffect(() => {
     const el = wrap.current;
@@ -65,8 +67,8 @@ export function LoopVideo({ name: deskName, aspect: deskAspect, label, base = '/
           onError={() => setFailed(true)}
           disablePictureInPicture
         >
-          {near && <source src={`${base}${name}.mp4`} type="video/mp4" />}
-          {near && !small && <source src={`${base}${name}.webm`} type="video/webm" onError={() => setFailed(true)} />}
+          {near && <source src={`${base}${name}.mp4${v}`} type="video/mp4" />}
+          {near && !small && <source src={`${base}${name}.webm${v}`} type="video/webm" onError={() => setFailed(true)} />}
         </video>
       )}
     </div>
